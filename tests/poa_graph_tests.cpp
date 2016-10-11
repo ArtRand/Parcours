@@ -103,6 +103,44 @@ TEST_CASE("PoaGraph Basic") {
         delete G;
         delete S;
     }
+}
 
+TEST_CASE("PoaGraph TestSort") {
+    //  0    1    2    3    4    5    6
+    // (A)->(C)->(G)->(A)->(G)->(T)->(A)
+    //        \____(A)->(C)____/^
+    //              7    8
+    std::string label = RandomString(10);
+    std::string label2 = RandomString(10);
+    std::string sequence = "ACGAGTA";
+    Sequence *S = new Sequence();
+    S->seq = sequence;
+    S->label = label;
+    PoaGraph *G = new PoaGraph(*S);
+
+    REQUIRE(G->K() == 7);
+
+    int64_t v = G->AddVertex('A');
+    int64_t w = G->AddVertex('C');
+
+    REQUIRE(G->K() == 9);
+    REQUIRE(v == 7);
+    REQUIRE(w == 8);
+
+    REQUIRE(G->VertexGetter(1)->Base() == 'C');
+    REQUIRE(G->VertexGetter(5)->Base() == 'T');
+
+    G->AddArc(1, v, label2);
+    G->AddArc(v, w, label2);
+    G->AddArc(w, 5, label2);
+
+    REQUIRE(!G->TestSort());
+    REQUIRE(!G->isSorted());
+
+    G->TopologicalSort();
+
+    REQUIRE(G->isSorted());
+    REQUIRE(G->TestSort());
 
 }
+

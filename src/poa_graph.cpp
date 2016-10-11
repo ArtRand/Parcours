@@ -97,7 +97,92 @@ void PoaGraph::AddBaseSequence(const Sequence& seq) {
     starts.push_back(firstId);
 }
 
+std::unordered_map<int64_t, DirectedArc*>& PoaGraph::OutNeighbors(int64_t id) {
+    return vertex_map[id]->OutNeighbors();
+}
+
+static void dfs(PoaGraph *G, int64_t s, std::unordered_map<int64_t, bool>& discovered, std::vector<int64_t>& finished,
+                std::unordered_map<int64_t, bool>& onStack) {
+    discovered[s] = true;
+    onStack[s] = true;
+    for (auto kv : G->OutNeighbors(s)) {
+        // default of map is false
+        if (!discovered[kv.first]) {
+            dfs(G, kv.first, discovered, finished, onStack);
+        }
+        if (onStack[kv.first]) {
+            std::cout << "Has Cycle!" << std::endl;
+        }
+    }
+    onStack[s] = false;
+    finished.push_back(s);
+}
+
+void PoaGraph::TopologicalSort() {
+    // map of vertices we've visited
+    std::unordered_map<int64_t, bool> discovered;
+    // vector of vertices that have been completely explored, contains the reverse of the topo sort
+    std::vector<int64_t> finished;
+    // vertices in the recursion
+    std::unordered_map<int64_t, bool> onStack;
+
+    auto isFinished = [&finished](int64_t q) -> bool {
+        std::vector<int64_t>::iterator it;
+        it = std::find(finished.begin(), finished.end(), q);
+        return it != finished.end();
+    };
+
+    for (int64_t i : vertex_list) {
+        if (!isFinished(i)) {
+            dfs(this, i, discovered, finished, onStack);
+        }
+    }
+
+    std::reverse(finished.begin(), finished.end());
+
+    assert(finished.size() == K());
+
+    for (int64_t i = 0; i < vertex_list.size(); i++) {
+        vertex_list[i] = finished[i];
+    }
+
+    sorted = true;
+}
+
+bool PoaGraph::TestSort() {
+    if (K() == 0) {
+        return false;
+    }
+
+    std::set<int64_t> seen;
+
+    for (int64_t i : vertex_list) {
+        Vertex *v = VertexGetter(i);
+        for (auto kv : v->in_arcs) {
+            bool check = seen.count(kv.first) > 0;
+            if (!check) {
+                return false;
+            }
+        }
+        seen.insert(i);
+    }
+    return true;
+}
+
 // helper methods
-int64_t PoaGraph::K() { return nVertices; }
-std::vector<int64_t>& PoaGraph::Starts() { return starts; }
-std::vector<int64_t>& PoaGraph::Vertices() { return vertex_list; }
+int64_t PoaGraph::K() {
+    return nVertices; }
+std::vector<int64_t>& PoaGraph::Starts() {
+    return starts; }
+std::vector<int64_t>& PoaGraph::Vertices() {
+    return vertex_list; }
+bool PoaGraph::isSorted() {
+    return sorted;
+}
+
+std::vector<int64_t>::iterator PoaGraph::VertexIterator() {
+    std::cerr << "Not implemented" << std::endl;
+    exit(1);
+    std::vector<int64_t>::iterator it = vertex_list.begin();
+    return it;
+}

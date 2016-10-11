@@ -10,6 +10,7 @@
 
 class Vertex {
 public:
+    // mapping of vertexIDs to Directed Arcs
     std::unordered_map<int64_t, DirectedArc*> out_arcs;
     std::unordered_map<int64_t, DirectedArc*> in_arcs;
     std::vector<Vertex*> aligned_to;
@@ -25,6 +26,8 @@ public:
 
     int64_t Id() const;
 
+    char Base();
+
     bool operator < (Vertex other) const;
 
     bool AddArc(std::unordered_map<int64_t, DirectedArc*>& arcs, int64_t neighborId, std::string label);
@@ -36,6 +39,8 @@ public:
     unsigned long InDegree();
 
     unsigned long OutDegree();
+
+    std::unordered_map<int64_t, DirectedArc*>& OutNeighbors();
 
 private:
     int64_t id;

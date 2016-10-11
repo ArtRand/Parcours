@@ -13,6 +13,10 @@ Vertex::Vertex(int64_t i, char b) {
     base = b;
 }
 
+char Vertex::Base() {
+    return base;
+}
+
 void Vertex::SetId(int64_t i) {
     id = i;
 }
@@ -53,4 +57,8 @@ unsigned long Vertex::InDegree() {
 
 unsigned long Vertex::OutDegree() {
     return out_arcs.size();
+}
+
+std::unordered_map<int64_t, DirectedArc*>& Vertex::OutNeighbors() {
+    return out_arcs;
 }

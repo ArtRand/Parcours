@@ -38,6 +38,8 @@ public:
 
     Vertex *VertexGetter(int i);
 
+    std::vector<int64_t>::iterator VertexIterator();
+
     unsigned long VertexOutDegree(int i) {
         return vertex_map[i]->OutDegree();
     }
@@ -46,10 +48,17 @@ public:
         return vertex_map[i]->InDegree();
     }
 
-    std::vector<int64_t >& Vertices();
+    std::vector<int64_t>& Vertices();
 
     std::vector<int64_t>& Starts();
 
+    std::unordered_map<int64_t, DirectedArc*>& OutNeighbors(int64_t);
+
+    void TopologicalSort();
+
+    bool TestSort();
+
+    bool isSorted();
 private:
     // containers
     std::unordered_map<int64_t, std::set<int>> adjacentcyList;  // map vertexId -> vertexId
