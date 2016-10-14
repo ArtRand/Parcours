@@ -47,9 +47,7 @@ public:
     }
 
     std::vector<int64_t>& Vertices();
-
-
-
+    
     std::vector<int64_t>& Starts();
 
     std::unordered_map<int64_t, DirectedArc*>& OutNeighbors(int64_t);

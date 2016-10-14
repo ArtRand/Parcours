@@ -5,7 +5,6 @@
 #ifndef PARCOURS_ALIGNMENT_H
 #define PARCOURS_ALIGNMENT_H
 
-
 #include "poa_graph.h"
 #include "dp_matrix.h"
 
@@ -23,19 +22,29 @@ public:
 
     void PrintScoresMatrix();
 
+
+
+    std::pair<std::string, std::string> AlignmentStrings();
+
 private:
     std::vector<int64_t> PredVertexIds(int64_t vId);
 
-    int64_t (*SubstitutionFunction)(char i, char j);
+    int64_t (*substitutionFunction)(char i, char j);
     PoaGraph *graph;
     Sequence *sequence;
-    std::unordered_map<int64_t, int64_t> IndexToId;
-    std::unordered_map<int64_t, int64_t> IdToIndex;
+    std::unordered_map<int64_t, int64_t> indexToId;
+    std::unordered_map<int64_t, int64_t> idToIndex;
     int64_t gapOpen;
     int64_t gapExtend;
     DpMatrix *scores;
     DpMatrix *bt_stringIdx;
     DpMatrix *bt_graphIdx;
+    std::deque<int64_t> matches;
+    std::deque<int64_t> strIdxs;
+
+    bool is_aligned;
+
+    void Traceback_global();
 };
 
 class Op {

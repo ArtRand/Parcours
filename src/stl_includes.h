@@ -13,5 +13,6 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <deque>
 
 #endif //PARCOURS_STL_INCLUDES_H

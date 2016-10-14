@@ -166,7 +166,6 @@ TEST_CASE("Test DpMatrix") {
     delete m;
 }
 
-
 TEST_CASE("Test Initialize Simple Sequence Alignment") {
     //std::string sBase = "ACAGT";
     std::string sBase = "ACAAATAG";
@@ -187,6 +186,11 @@ TEST_CASE("Test Initialize Simple Sequence Alignment") {
     SimpleAlignment *A = new SimpleAlignment(S, G, BasicMatchFcn);
 
     A->AlignSequenceToGraph();
+
+    std::pair<std::string, std::string> results = A->AlignmentStrings();
+    REQUIRE(results.first == "AC--ATAG");
+    REQUIRE(results.second == "ACAAATA-");
+
 
 
 }
