@@ -3,8 +3,11 @@
 //
 #define CATCH_CONFIG_MAIN
 
+#include <dp_matrix.h>
+#include <alignment.h>
 #include "catch.hpp"
 #include "test_helpers.h"
+#include "common.h"
 
 TEST_CASE("Test vertex and arcs") {
     for (int64_t i = 0; i < 100; i++) {
@@ -142,5 +145,48 @@ TEST_CASE("PoaGraph TestSort") {
     REQUIRE(G->isSorted());
     REQUIRE(G->TestSort());
 
+    delete G;
 }
 
+TEST_CASE("Test DpMatrix") {
+    DpMatrix *m = new DpMatrix(10, 10);
+    for (uint64_t u = 10; u < 20; u++) {
+        REQUIRE_THROWS_AS(m->Getter(u, 10), GraphException);
+        REQUIRE_THROWS_AS(m->Getter(10, u), GraphException);
+        REQUIRE_THROWS_AS(m->Setter(u, 10, 0.0), GraphException);
+        REQUIRE_THROWS_AS(m->Setter(10, u, 0.0), GraphException);
+    }
+    for (uint64_t u = 0; u < 50; u++) {
+        int64_t x = RandomInt(0, 9);
+        int64_t y = RandomInt(0, 9);
+        double val = rand();
+        REQUIRE_NOTHROW(m->Setter(x, y, val));
+        REQUIRE(m->Getter(x, y) == val);
+    }
+    delete m;
+}
+
+
+TEST_CASE("Test Initialize Simple Sequence Alignment") {
+    //std::string sBase = "ACAGT";
+    std::string sBase = "ACAAATAG";
+    std::string lBase = RandomString(5);
+    Sequence *base = new Sequence;
+    base->seq = sBase;
+    base->label = lBase;
+
+    PoaGraph *G = new PoaGraph(*base);
+
+    //std::string s = "ACGT";
+    std::string s = "ACATAG";
+    std::string l = RandomString(5);
+    Sequence *S = new Sequence;
+    S->seq = s;
+    S->label = l;
+
+    SimpleAlignment *A = new SimpleAlignment(S, G, BasicMatchFcn);
+
+    A->AlignSequenceToGraph();
+
+
+}

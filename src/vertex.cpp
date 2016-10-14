@@ -13,7 +13,7 @@ Vertex::Vertex(int64_t i, char b) {
     base = b;
 }
 
-char Vertex::Base() {
+char Vertex::Base() const {
     return base;
 }
 

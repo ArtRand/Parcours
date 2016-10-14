@@ -6,7 +6,7 @@
 #define PARCOURS_POAGRAPH_H
 
 #include "stl_includes.h"
-#include "graph_exceptions.h"
+#include "poa_exceptions.h"
 #include "vertex.h"
 
 
@@ -36,9 +36,7 @@ public:
 
     int64_t K();
 
-    Vertex *VertexGetter(int i);
-
-    std::vector<int64_t>::iterator VertexIterator();
+    Vertex *VertexGetter(int64_t i);
 
     unsigned long VertexOutDegree(int i) {
         return vertex_map[i]->OutDegree();
@@ -49,6 +47,8 @@ public:
     }
 
     std::vector<int64_t>& Vertices();
+
+
 
     std::vector<int64_t>& Starts();
 

@@ -11,5 +11,7 @@
 #include <vector>
 #include <cassert>
 #include <string>
+#include <iostream>
+#include <memory>
 
 #endif //PARCOURS_STL_INCLUDES_H

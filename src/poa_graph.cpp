@@ -6,7 +6,7 @@
 #include "poa_graph.h"
 
 
-PoaGraph::PoaGraph(const Sequence& seq) : nVertices(0), nb_arcs(0), next_vertex_id(0)  {
+PoaGraph::PoaGraph(const Sequence& seq): nVertices(0), nb_arcs(0), next_vertex_id(0)  {
     AddBaseSequence(seq);
 }
 
@@ -42,7 +42,7 @@ int64_t PoaGraph::AddVertex(char base) {
     return vId;
 }
 
-Vertex *PoaGraph::VertexGetter(int i) {
+Vertex *PoaGraph::VertexGetter(int64_t i) {
     if (!ContainsVertex(i)) {
         throw GraphException("VertexGetter: Could not find vertex");
     }
@@ -140,9 +140,9 @@ void PoaGraph::TopologicalSort() {
 
     std::reverse(finished.begin(), finished.end());
 
-    assert(finished.size() == K());
+    assert(finished.size() == static_cast<uint64_t>(K()));
 
-    for (int64_t i = 0; i < vertex_list.size(); i++) {
+    for (uint64_t i = 0; i < vertex_list.size(); i++) {
         vertex_list[i] = finished[i];
     }
 
@@ -170,19 +170,7 @@ bool PoaGraph::TestSort() {
 }
 
 // helper methods
-int64_t PoaGraph::K() {
-    return nVertices; }
-std::vector<int64_t>& PoaGraph::Starts() {
-    return starts; }
-std::vector<int64_t>& PoaGraph::Vertices() {
-    return vertex_list; }
-bool PoaGraph::isSorted() {
-    return sorted;
-}
-
-std::vector<int64_t>::iterator PoaGraph::VertexIterator() {
-    std::cerr << "Not implemented" << std::endl;
-    exit(1);
-    std::vector<int64_t>::iterator it = vertex_list.begin();
-    return it;
-}
+int64_t PoaGraph::K() { return nVertices; }
+std::vector<int64_t>& PoaGraph::Starts() { return starts; }
+std::vector<int64_t>& PoaGraph::Vertices() { return vertex_list; }
+bool PoaGraph::isSorted() { return sorted; }

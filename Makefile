@@ -1,5 +1,5 @@
 CXX=g++
-CFLAGS=-Wall -std=c++11
+CFLAGS=-Wall -std=c++14
 INC=./src/
 LIB_SOURCES=./src/*.cpp
 testINC=./tests/
