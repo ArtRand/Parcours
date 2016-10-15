@@ -2,12 +2,48 @@
 // Created by Arthur Rand on 10/6/16.
 //
 
-#include <iostream>
 #include "poa_graph.h"
 
 
 PoaGraph::PoaGraph(const Sequence& seq): nVertices(0), nb_arcs(0), next_vertex_id(0)  {
-    AddBaseSequence(seq);
+    AddBaseSequence(seq.seq, seq.label, true);
+}
+
+void PoaGraph::AddBaseSequence(std::string sequence, std::string label, bool update) {
+    int64_t f, l;
+    AddBaseSequence(sequence, label, update, f, l);
+}
+
+void PoaGraph::AddBaseSequence(std::string sequence, std::string label, bool update,
+                               int64_t& first_id, int64_t& last_id) {
+    int64_t firstId, lastId;
+    firstId = -1;
+    lastId = -1;
+    bool need_sort = sorted;
+
+    for (char c : sequence) {
+        int64_t vId = AddVertex(c);
+        // condition for first character, make it the first vertex-id
+        if (firstId < 0) {
+            firstId = vId;
+        }
+        // condition for adding all nodes after the first, connect them to previous vertex
+        if (lastId >= 0) {
+            AddArc(lastId, vId, label);
+        }
+        lastId = vId;  // update
+    }
+
+    sorted = need_sort;
+
+    // todo might need logic here
+    if (update) {
+        seqs.insert(sequence);
+        labels.insert(label);
+        starts.push_back(firstId);
+    }
+    first_id = firstId;
+    last_id = lastId;
 }
 
 bool PoaGraph::ContainsVertex(int64_t i) {
@@ -68,33 +104,6 @@ void PoaGraph::AddArc(int64_t startId, int64_t endId, std::string label) {
     }
 
     sorted = false;
-}
-
-void PoaGraph::AddBaseSequence(const Sequence& seq) {
-    int64_t firstId, prevId;
-    firstId = -1;
-    prevId = -1;
-    bool need_sort = sorted;
-
-    for (char c : seq.seq) {
-        int64_t vId = AddVertex(c);
-        // condition for first character, make it the first vertex-id
-        if (firstId < 0) {
-            firstId = vId;
-        }
-        // condition for adding all nodes after the first, connect them to previous vertex
-        if (prevId >= 0) {
-            AddArc(prevId, vId, seq.label);
-        }
-        prevId = vId;  // update
-    }
-
-    sorted = need_sort;
-
-    // todo might need logic here
-    seqs.insert(seq.seq);
-    labels.insert(seq.label);
-    starts.push_back(firstId);
 }
 
 std::unordered_map<int64_t, DirectedArc*>& PoaGraph::OutNeighbors(int64_t id) {
@@ -171,6 +180,19 @@ bool PoaGraph::TestSort() {
 
 // helper methods
 int64_t PoaGraph::K() { return nVertices; }
+
 std::vector<int64_t>& PoaGraph::Starts() { return starts; }
+
 std::vector<int64_t>& PoaGraph::Vertices() { return vertex_list; }
+
 bool PoaGraph::isSorted() { return sorted; }
+
+unsigned long PoaGraph::VertexOutDegree(int64_t i) { return vertex_map[i]->OutDegree(); }
+
+unsigned long PoaGraph::VertexInDegree(int64_t i) { return vertex_map[i]->InDegree(); }
+
+void PoaGraph::AddSequence(std::string seq) { seqs.insert(seq); }
+
+void PoaGraph::AddLabel(std::string label) { labels.insert(label); }
+
+void PoaGraph::AddStart(int64_t startId) { starts.push_back(startId); }

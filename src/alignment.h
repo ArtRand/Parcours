@@ -22,7 +22,7 @@ public:
 
     void PrintScoresMatrix();
 
-
+    void AddAlignmentToGraph();
 
     std::pair<std::string, std::string> AlignmentStrings();
 
@@ -39,8 +39,8 @@ private:
     DpMatrix *scores;
     DpMatrix *bt_stringIdx;
     DpMatrix *bt_graphIdx;
-    std::deque<int64_t> matches;
-    std::deque<int64_t> strIdxs;
+    std::deque<int64_t> matches;  // contains vertex IDs
+    std::deque<int64_t> strIdxs;  // indices of the string being aligned
 
     bool is_aligned;
 

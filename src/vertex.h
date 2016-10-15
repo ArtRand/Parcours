@@ -18,8 +18,8 @@ public:
     std::unordered_map<int64_t, DirectedArc*> out_arcs;
     std::unordered_map<int64_t, DirectedArc*> in_arcs;
 
-    // aligned to, other vertices that this node is aligned to, for comparing bases
-    std::vector<Vertex*> aligned_to;
+    // aligned to, other vertex IDs that this node is aligned to, for comparing bases
+    std::vector<int64_t> aligned_to;
 
     // constructors
     Vertex(): id(-1), base('\0') {};  // default construct with ID = -1

@@ -232,7 +232,7 @@ void SimpleAlignment::Traceback_global() {
         best_i = next_i;
         best_j = next_j;
     }
-    /*
+
     st_uglyf("strIdxs: ");
     for (auto i : strIdxs) {
         st_uglyf("%lld, ", i);
@@ -243,7 +243,7 @@ void SimpleAlignment::Traceback_global() {
         st_uglyf("%lld, ", i);
     }
     std::cout << "\n";
-    */
+
 }
 
 std::pair<std::string, std::string> SimpleAlignment::AlignmentStrings() {
@@ -273,6 +273,117 @@ std::pair<std::string, std::string> SimpleAlignment::AlignmentStrings() {
 
     return std::make_pair(seqStr, grphStr);
 }
+
+static inline std::vector<int64_t> AlignedStringIdxs(const std::deque<int64_t>& string_indices) {
+    for (auto i : string_indices) std::cout << i << " "; std::cout << "\n";
+
+    std::vector<int64_t> validStringIdxs (string_indices.size());
+    // iterator pointing to the start of validStringIdxs that contains all of the aligned string indexes
+    auto it = std::copy_if(string_indices.begin(), string_indices.end(), validStringIdxs.begin(),
+                           [] (int64_t i) { return i >= 0;});
+
+    validStringIdxs.resize(std::distance(validStringIdxs.begin(), it));
+
+    for (auto i : validStringIdxs) std::cout << i << " "; std::cout << "\n";
+
+    return validStringIdxs;
+}
+
+void SimpleAlignment::AddAlignmentToGraph() {
+    int64_t firstId = -1;
+    int64_t headId = -1;
+    int64_t tailId = -1;
+
+    std::vector<int64_t> aligned_string_idxs = AlignedStringIdxs(strIdxs);
+
+    int64_t startSeqIdx = aligned_string_idxs.front();
+    int64_t endSeqIdx = aligned_string_idxs.back();
+
+    st_uglyf("%lld %lld\n", startSeqIdx, endSeqIdx);
+
+    // first we deal with un-aligned sequence in the 'string' or read being aligned to the graph
+    if (startSeqIdx > 0) {  // there is a left ragged-end
+        std::string unaligned = sequence->seq.substr(0, startSeqIdx - 1);
+        graph->AddBaseSequence(unaligned, sequence->label, false, firstId, headId);
+    }
+    if (endSeqIdx < (int64_t )sequence->seq.size()) {  // there is a right ragged end
+        int64_t slice_start = endSeqIdx + 1;
+        int64_t extend_length = sequence->seq.size() - slice_start;
+        std::string unaligned = sequence->seq.substr(slice_start, extend_length);
+        int64_t _;
+        graph->AddBaseSequence(unaligned, sequence->label, false, tailId, _);
+    }
+
+    st_uglyf("firstId: %lld, headId: %lld, tailId: %lld\n", firstId, headId, tailId);
+
+    // check for matches and stringIdxs being a different length, shouldn't be the case...
+    if (strIdxs.size() != matches.size()) {
+        throw GraphException("string indices and matches are different sizes, can't have that");
+    }
+
+    for (uint64_t j = 0; j < matches.size(); j++) {
+        int64_t string_idx = strIdxs.at(j);  // the index of the string we're looing at
+        int64_t vertex_id = matches.at(j);   // the vertex id in the graph we're looking at
+
+        if (string_idx == -1) {
+            continue;
+        }
+
+        char base = sequence->seq.at(string_idx);
+
+        int64_t newNodeId;
+
+        // if there isn't an alignment to this vertex ??
+        if (vertex_id == -1) {
+            newNodeId = graph->AddVertex(base);
+        } else if (graph->VertexGetter(vertex_id)->Base() == base) {  // if there is a match
+            newNodeId = vertex_id;
+        } else {
+            int64_t foundMatch = -1;
+
+            // search all of the vertices this vertex is aligned to for a match
+            for (int64_t al : graph->VertexGetter(vertex_id)->aligned_to) {
+                if (graph->VertexGetter(al)->Base() == base) {
+                    foundMatch = al;
+                }
+            }
+
+            if (foundMatch == -1) {  // didn't find a match
+                // add it to the graph
+                newNodeId = graph->AddVertex(base);
+                // align it to this vertex
+                graph->VertexGetter(newNodeId)->aligned_to.push_back(vertex_id);
+                // and the vertices it's aligned to
+                for (int64_t al: graph->VertexGetter(vertex_id)->aligned_to) {
+                    graph->VertexGetter(newNodeId)->aligned_to.push_back(al);
+                }
+                // now update all the vertices it's aligned to with this new vertex id
+                for (int64_t otherId : graph->VertexGetter(newNodeId)->aligned_to) {
+                    graph->VertexGetter(otherId)->aligned_to.push_back(newNodeId);
+                }
+            } else {  // found a match
+                newNodeId = foundMatch;
+            }
+        }
+        // connect the new node, or just update the label
+        graph->AddArc(headId, newNodeId, sequence->label);
+        headId = newNodeId;  // update for the next loop
+        if (firstId == -1) {  // keep track of the new start to update later
+            firstId = headId;
+        }
+    }
+
+    graph->AddArc(headId, tailId, sequence->label);
+
+    // resort
+    graph->TopologicalSort();
+    assert(graph->TestSort());
+
+    graph->AddSequence(sequence->seq);
+    graph->AddLabel(sequence->label);
+    graph->AddStart(firstId);
+}
+
 
 int64_t BasicMatchFcn(char i, char j) {
     return i == j ? 4 : -2;

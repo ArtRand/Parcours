@@ -24,7 +24,9 @@ public:
     // todo
     ~PoaGraph() {}
 
-    void AddBaseSequence(const Sequence &seq);
+    void AddBaseSequence(std::string sequence, std::string label, bool update);
+
+    void AddBaseSequence(std::string sequence, std::string label, bool update, int64_t& first_id, int64_t& last_id);
 
     int64_t AddVertex(char base);
 
@@ -38,16 +40,12 @@ public:
 
     Vertex *VertexGetter(int64_t i);
 
-    unsigned long VertexOutDegree(int i) {
-        return vertex_map[i]->OutDegree();
-    }
+    unsigned long VertexOutDegree(int64_t i);
 
-    unsigned long VertexInDegree(int i) {
-        return vertex_map[i]->InDegree();
-    }
+    unsigned long VertexInDegree(int64_t i);
 
     std::vector<int64_t>& Vertices();
-    
+
     std::vector<int64_t>& Starts();
 
     std::unordered_map<int64_t, DirectedArc*>& OutNeighbors(int64_t);
@@ -57,6 +55,13 @@ public:
     bool TestSort();
 
     bool isSorted();
+
+    void AddSequence(std::string seq);
+
+    void AddLabel(std::string label);
+
+    void AddStart(int64_t startId);
+
 private:
     // containers
     std::unordered_map<int64_t, std::set<int>> adjacentcyList;  // map vertexId -> vertexId

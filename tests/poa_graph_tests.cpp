@@ -191,6 +191,7 @@ TEST_CASE("Test Initialize Simple Sequence Alignment") {
     REQUIRE(results.first == "AC--ATAG");
     REQUIRE(results.second == "ACAAATA-");
 
-
-
+    A->AddAlignmentToGraph();
 }
+
+// TODO need test with unaligned 'read' sequence
