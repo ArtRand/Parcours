@@ -54,7 +54,7 @@ public:
 
     bool TestSort();
 
-    bool isSorted();
+    bool IsSorted();
 
     void AddSequence(std::string seq);
 

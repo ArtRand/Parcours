@@ -14,9 +14,14 @@ typedef enum _move {
     DEL = 2,
 } Move;
 
+/*
+ * SimpleAlignment class.
+ */
 class SimpleAlignment {
 public:
     SimpleAlignment(Sequence *S, PoaGraph *G, int64_t (*SubFcn)(char, char));
+
+    ~SimpleAlignment() {};
 
     void AlignSequenceToGraph();
 
@@ -44,7 +49,7 @@ private:
 
     bool is_aligned;
 
-    void Traceback_global();
+    void traceback_global();
 };
 
 class Op {

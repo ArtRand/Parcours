@@ -3,8 +3,8 @@
 //
 #define CATCH_CONFIG_MAIN
 
-#include <dp_matrix.h>
-#include <alignment.h>
+#include "alignment.h"
+#include "dp_matrix.h"
 #include "catch.hpp"
 #include "test_helpers.h"
 #include "common.h"
@@ -138,11 +138,11 @@ TEST_CASE("PoaGraph TestSort") {
     G->AddArc(w, 5, label2);
 
     REQUIRE(!G->TestSort());
-    REQUIRE(!G->isSorted());
+    REQUIRE(!G->IsSorted());
 
     G->TopologicalSort();
 
-    REQUIRE(G->isSorted());
+    REQUIRE(G->IsSorted());
     REQUIRE(G->TestSort());
 
     delete G;
@@ -166,17 +166,18 @@ TEST_CASE("Test DpMatrix") {
     delete m;
 }
 
-TEST_CASE("Test Initialize Simple Sequence Alignment") {
-    //std::string sBase = "ACAGT";
-    std::string sBase = "ACAAATAG";
-    std::string lBase = RandomString(5);
+TEST_CASE("Test Initialize Simple Sequence Alignment With Deletes") {
+    std::string base_string = "ACAAATAG";
+    std::string base_label = RandomString(5);
     Sequence *base = new Sequence;
-    base->seq = sBase;
-    base->label = lBase;
+    base->seq = base_string;
+    base->label = base_label;
 
     PoaGraph *G = new PoaGraph(*base);
+    
+    REQUIRE(G->K() == 8);
+    delete base;
 
-    //std::string s = "ACGT";
     std::string s = "ACATAG";
     std::string l = RandomString(5);
     Sequence *S = new Sequence;
@@ -184,14 +185,302 @@ TEST_CASE("Test Initialize Simple Sequence Alignment") {
     S->label = l;
 
     SimpleAlignment *A = new SimpleAlignment(S, G, BasicMatchFcn);
-
     A->AlignSequenceToGraph();
 
+    // check alignment strings
     std::pair<std::string, std::string> results = A->AlignmentStrings();
     REQUIRE(results.first == "AC--ATAG");
     REQUIRE(results.second == "ACAAATA-");
-
+    
     A->AddAlignmentToGraph();
+
+    // manually check the graph
+    REQUIRE(G->K() == 9);  // added one node to the graph
+    REQUIRE(G->IsSorted());
+    REQUIRE(G->TestSort());
+    // walk though the graph and check topology
+
+    auto checkGraph0 = [G, l, base_label]() {
+        int64_t checking = 0;
+        // 0
+        REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+        REQUIRE(G->VertexInDegree(checking) == 0);
+        REQUIRE(G->VertexOutDegree(checking) == 1);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+        // check connection to 1
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(1) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[1]->LabelSet().size() == 2);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[1]->LabelSet().count(base_label) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[1]->LabelSet().count(l) == 1);
+
+        // 1
+        checking = 1;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'C');
+        REQUIRE(G->VertexInDegree(checking) == 1);
+        REQUIRE(G->VertexOutDegree(checking) == 2);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+        // check connection to 2
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(2) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[2]->LabelSet().size() == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[2]->LabelSet().count(base_label) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[2]->LabelSet().count(l) == 0);
+        // check connection to 4
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(4) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().size() == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(base_label) == 0);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(l) == 1);
+
+        // 2
+        checking = 2;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+        REQUIRE(G->VertexInDegree(checking) == 1);
+        REQUIRE(G->VertexOutDegree(checking) == 1);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+        // check connection to 3
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(3) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[3]->LabelSet().size() == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[3]->LabelSet().count(base_label) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[3]->LabelSet().count(l) == 0);
+
+        // 3
+        checking = 3;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+        REQUIRE(G->VertexInDegree(checking) == 1);
+        REQUIRE(G->VertexOutDegree(checking) == 1);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+        // check connection to 4
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(4) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().size() == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(base_label) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(l) == 0);
+
+        // 4
+        checking = 4;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+        REQUIRE(G->VertexInDegree(checking) == 2);
+        REQUIRE(G->VertexOutDegree(checking) == 1);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+        // check connection to 5
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(5) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[5]->LabelSet().size() == 2);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[5]->LabelSet().count(base_label) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[5]->LabelSet().count(l) == 1);
+
+        // 5
+        checking = 5;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'T');
+        REQUIRE(G->VertexInDegree(checking) == 1);
+        REQUIRE(G->VertexOutDegree(checking) == 1);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+        // check connection to 6
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(6) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[6]->LabelSet().size() == 2);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[6]->LabelSet().count(base_label) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[6]->LabelSet().count(l) == 1);
+
+        // 6
+        checking = 6;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+        REQUIRE(G->VertexInDegree(checking) == 1);
+        REQUIRE(G->VertexOutDegree(checking) == 2);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+        // check connection to 7
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(7) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[7]->LabelSet().size() == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[7]->LabelSet().count(base_label) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[7]->LabelSet().count(l) == 0);
+        // check connection to 8
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(8) == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[8]->LabelSet().size() == 1);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[8]->LabelSet().count(base_label) == 0);
+        REQUIRE(G->VertexGetter(checking)->OutNeighbors()[8]->LabelSet().count(l) == 1);
+
+        // 7
+        checking = 7;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'G');
+        REQUIRE(G->VertexInDegree(checking) == 1);
+        REQUIRE(G->VertexOutDegree(checking) == 0);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+
+        // 8
+        checking = 8;
+        REQUIRE(G->VertexGetter(checking)->Base() == 'G');
+        REQUIRE(G->VertexInDegree(checking) == 1);
+        REQUIRE(G->VertexOutDegree(checking) == 0);
+        REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+    };
+
+    checkGraph0();
+
+    // delete this alignment and it's associated sequence
+    delete A;
+    delete S;
+
+    // check graph is still correct, and no seg-faults
+    checkGraph0();
+
+    // align another sequence
+    std::string s2 = "ACATATAG";
+    std::string l2 = RandomString(6);
+    S = new Sequence;
+    S->seq = s2;
+    S->label = l2;
+
+    A = new SimpleAlignment(S, G, BasicMatchFcn);
+    A->AlignSequenceToGraph();
+    results = A->AlignmentStrings();
+    REQUIRE(results.first == "ACATATAG");
+    REQUIRE(results.second == "ACAAATAG");
+    A->AddAlignmentToGraph();
+    delete A;
+    delete S;
+
+    // should have added another aligned-to node
+    REQUIRE(G->K() == 10);
+    // check
+
+    int64_t checking = 0;
+    // 0
+    REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+    REQUIRE(G->VertexInDegree(checking) == 0);
+    REQUIRE(G->VertexOutDegree(checking) == 1);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+    // check connection to 1
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(1) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[1]->LabelSet().size() == 3);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[1]->LabelSet().count(base_label) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[1]->LabelSet().count(l) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[1]->LabelSet().count(l2) == 1);
+
+    // 1
+    checking = 1;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'C');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 2);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+    // check connection to 2
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(2) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[2]->LabelSet().size() == 2);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[2]->LabelSet().count(base_label) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[2]->LabelSet().count(l2) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[2]->LabelSet().count(l) == 0);
+    // check connection to 4
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(4) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().size() == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(base_label) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(l) == 1);
+
+    // 2
+    checking = 2;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 2);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+    // check connection to 3
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(3) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[3]->LabelSet().size() == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[3]->LabelSet().count(base_label) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[3]->LabelSet().count(l) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[3]->LabelSet().count(l2) == 0);
+    // check connection to 9
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(9) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[9]->LabelSet().size() == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[9]->LabelSet().count(base_label) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[9]->LabelSet().count(l) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[9]->LabelSet().count(l2) == 1);
+
+    // 3
+    checking = 3;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 1);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 1);
+    REQUIRE(std::find(G->VertexGetter(checking)->aligned_to.begin(),
+                      G->VertexGetter(checking)->aligned_to.end(), 9) != G->VertexGetter(checking)->aligned_to.end());
+    // check connection to 4
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(4) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().size() == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(base_label) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(l) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(l2) == 0);
+
+    // 4
+    checking = 4;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+    REQUIRE(G->VertexInDegree(checking) == 3);
+    REQUIRE(G->VertexOutDegree(checking) == 1);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+    // check connection to 5
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(5) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[5]->LabelSet().size() == 3);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[5]->LabelSet().count(base_label) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[5]->LabelSet().count(l) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[5]->LabelSet().count(l2) == 1);
+
+    // 5
+    checking = 5;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'T');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 1);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+    // check connection to 6
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(6) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[6]->LabelSet().size() == 3);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[6]->LabelSet().count(base_label) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[6]->LabelSet().count(l) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[6]->LabelSet().count(l2) == 1);
+
+    // 6
+    checking = 6;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'A');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 2);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+    // check connection to 7
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(7) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[7]->LabelSet().size() == 2);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[7]->LabelSet().count(base_label) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[7]->LabelSet().count(l) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[7]->LabelSet().count(l2) == 1);
+    // check connection to 8
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(8) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[8]->LabelSet().size() == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[8]->LabelSet().count(base_label) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[8]->LabelSet().count(l) == 1);
+
+    // 7
+    checking = 7;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'G');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 0);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+
+    // 8
+    checking = 8;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'G');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 0);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 0);
+
+    // 9
+    checking = 9;
+    REQUIRE(G->VertexGetter(checking)->Base() == 'T');
+    REQUIRE(G->VertexInDegree(checking) == 1);
+    REQUIRE(G->VertexOutDegree(checking) == 1);
+    REQUIRE(G->VertexGetter(checking)->aligned_to.size() == 1);
+    REQUIRE(std::find(G->VertexGetter(checking)->aligned_to.begin(),
+                      G->VertexGetter(checking)->aligned_to.end(), 3) != G->VertexGetter(checking)->aligned_to.end());
+    // check connection to 4
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors().count(4) == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().size() == 1);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(base_label) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(l) == 0);
+    REQUIRE(G->VertexGetter(checking)->OutNeighbors()[4]->LabelSet().count(l2) == 1);
+
+    delete G;
 }
+
+
+// TODO generative test with deletions/insertions of known lengths
 
 // TODO need test with unaligned 'read' sequence

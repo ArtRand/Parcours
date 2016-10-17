@@ -185,7 +185,7 @@ std::vector<int64_t>& PoaGraph::Starts() { return starts; }
 
 std::vector<int64_t>& PoaGraph::Vertices() { return vertex_list; }
 
-bool PoaGraph::isSorted() { return sorted; }
+bool PoaGraph::IsSorted() { return sorted; }
 
 unsigned long PoaGraph::VertexOutDegree(int64_t i) { return vertex_map[i]->OutDegree(); }
 

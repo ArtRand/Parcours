@@ -51,14 +51,8 @@ bool Vertex::AddOutArc(int64_t nId, std::string label) {
     return AddArc(out_arcs, nId, label);
 }
 
-unsigned long Vertex::InDegree() {
-    return in_arcs.size();
-}
+unsigned long Vertex::InDegree() { return in_arcs.size(); }
 
-unsigned long Vertex::OutDegree() {
-    return out_arcs.size();
-}
+unsigned long Vertex::OutDegree() { return out_arcs.size(); }
 
-std::unordered_map<int64_t, DirectedArc*>& Vertex::OutNeighbors() {
-    return out_arcs;
-}
+std::unordered_map<int64_t, DirectedArc*>& Vertex::OutNeighbors() { return out_arcs; }

@@ -7,7 +7,7 @@
 
 static inline void indexMapMaker(PoaGraph *G, std::unordered_map<int64_t, int64_t> &IndexToId,
                                  std::unordered_map<int64_t, int64_t> &IdToIndex) {
-    if (!G->isSorted()) {
+    if (!G->IsSorted()) {
         G->TopologicalSort();
     }
     assert(G->TestSort());
@@ -43,6 +43,9 @@ static inline void initializeDpMatrixGlobal(DpMatrix *M, int64_t gapOpen, int64_
 SimpleAlignment::SimpleAlignment(Sequence *S, PoaGraph *G, int64_t (*SubFcn)(char, char)): gapOpen(-4),
                                                                                            gapExtend(-2),
                                                                                            is_aligned(false) {
+    if (S->seq.size() <= 0) {
+        throw GraphException("SimpleAlignment constructor, passed empty sequence string error");
+    }
     sequence = S;
     graph = G;
     substitutionFunction = SubFcn;
@@ -104,7 +107,7 @@ static inline bool compareOp(Op *o, Op *p) {
 */
 
 void SimpleAlignment::AlignSequenceToGraph() {
-    if (!graph->isSorted()) {
+    if (!graph->IsSorted()) {
         graph->TopologicalSort();
         assert(graph->TestSort());
     }
@@ -165,16 +168,16 @@ void SimpleAlignment::AlignSequenceToGraph() {
         }
         i++;
     }
-    //scores->ToString(); std::cout << std::endl;
+    scores->ToString(); std::cout << std::endl;
     //bt_graphIdx->ToString(); std::cout << std::endl;
     //bt_stringIdx->ToString();
     //deleteCost->ToString();
-    Traceback_global();
+    traceback_global();
 
     is_aligned = true;
 }
 
-void SimpleAlignment::Traceback_global() {
+void SimpleAlignment::traceback_global() {
     int64_t best_j = scores->Cols() - 1;  // minus one to make 0-indexed
     int64_t best_i = scores->Rows() - 1;  // see -^^
 
@@ -191,7 +194,7 @@ void SimpleAlignment::Traceback_global() {
     // there should be at least 1 terminal vertex
     if (terminals.size() < 1) {
         st_uglyf("Got %lld terminals\n", terminals.size());
-        throw GraphException("SimpleAlignment::Traceback_global - terminals less than 1 error\n");
+        throw GraphException("SimpleAlignment::traceback_global - terminals less than 1 error\n");
     }
     best_i = terminals.at(0);
     double bestScore = scores->Getter(best_i, best_j);
@@ -209,10 +212,10 @@ void SimpleAlignment::Traceback_global() {
 
     // TODO can probably remove this later
     if (matches.size() != 0) {
-        throw GraphException("SimpleAlignment::Traceback_global - Matches vector is not cleared");
+        throw GraphException("SimpleAlignment::traceback_global - Matches vector is not cleared");
     }
     if (strIdxs.size() != 0) {
-        throw GraphException("SimpleAlignment::Traceback_global - String Indices vector is not cleared");
+        throw GraphException("SimpleAlignment::traceback_global - String Indices vector is not cleared");
     }
 
     //bt_graphIdx->ToString();
@@ -243,7 +246,6 @@ void SimpleAlignment::Traceback_global() {
         st_uglyf("%lld, ", i);
     }
     std::cout << "\n";
-
 }
 
 std::pair<std::string, std::string> SimpleAlignment::AlignmentStrings() {
@@ -275,16 +277,12 @@ std::pair<std::string, std::string> SimpleAlignment::AlignmentStrings() {
 }
 
 static inline std::vector<int64_t> AlignedStringIdxs(const std::deque<int64_t>& string_indices) {
-    for (auto i : string_indices) std::cout << i << " "; std::cout << "\n";
-
     std::vector<int64_t> validStringIdxs (string_indices.size());
     // iterator pointing to the start of validStringIdxs that contains all of the aligned string indexes
     auto it = std::copy_if(string_indices.begin(), string_indices.end(), validStringIdxs.begin(),
                            [] (int64_t i) { return i >= 0;});
 
     validStringIdxs.resize(std::distance(validStringIdxs.begin(), it));
-
-    for (auto i : validStringIdxs) std::cout << i << " "; std::cout << "\n";
 
     return validStringIdxs;
 }
@@ -299,8 +297,6 @@ void SimpleAlignment::AddAlignmentToGraph() {
     int64_t startSeqIdx = aligned_string_idxs.front();
     int64_t endSeqIdx = aligned_string_idxs.back();
 
-    st_uglyf("%lld %lld\n", startSeqIdx, endSeqIdx);
-
     // first we deal with un-aligned sequence in the 'string' or read being aligned to the graph
     if (startSeqIdx > 0) {  // there is a left ragged-end
         std::string unaligned = sequence->seq.substr(0, startSeqIdx - 1);
@@ -313,8 +309,6 @@ void SimpleAlignment::AddAlignmentToGraph() {
         int64_t _;
         graph->AddBaseSequence(unaligned, sequence->label, false, tailId, _);
     }
-
-    st_uglyf("firstId: %lld, headId: %lld, tailId: %lld\n", firstId, headId, tailId);
 
     // check for matches and stringIdxs being a different length, shouldn't be the case...
     if (strIdxs.size() != matches.size()) {
@@ -348,10 +342,12 @@ void SimpleAlignment::AddAlignmentToGraph() {
                 }
             }
 
-            if (foundMatch == -1) {  // didn't find a match
-                // add it to the graph
-                newNodeId = graph->AddVertex(base);
+            // didn't find a match
+            if (foundMatch == -1) {
+                // add new vertex to the graph
+                newNodeId = graph->AddVertex(base); st_uglyf("Adding aligned-to node! (%lld) \n", newNodeId);
                 // align it to this vertex
+                st_uglyf("aligning it to %lld\n", vertex_id);
                 graph->VertexGetter(newNodeId)->aligned_to.push_back(vertex_id);
                 // and the vertices it's aligned to
                 for (int64_t al: graph->VertexGetter(vertex_id)->aligned_to) {
@@ -384,8 +380,5 @@ void SimpleAlignment::AddAlignmentToGraph() {
     graph->AddStart(firstId);
 }
 
-
-int64_t BasicMatchFcn(char i, char j) {
-    return i == j ? 4 : -2;
-}
+int64_t BasicMatchFcn(char i, char j) { return i == j ? 4 : -2; }
 
