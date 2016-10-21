@@ -168,7 +168,7 @@ void SimpleAlignment::AlignSequenceToGraph() {
         }
         i++;
     }
-    scores->ToString(); std::cout << std::endl;
+    //scores->ToString(); std::cout << std::endl;
     //bt_graphIdx->ToString(); std::cout << std::endl;
     //bt_stringIdx->ToString();
     //deleteCost->ToString();
@@ -235,7 +235,7 @@ void SimpleAlignment::traceback_global() {
         best_i = next_i;
         best_j = next_j;
     }
-
+    /* 
     st_uglyf("strIdxs: ");
     for (auto i : strIdxs) {
         st_uglyf("%lld, ", i);
@@ -246,6 +246,7 @@ void SimpleAlignment::traceback_global() {
         st_uglyf("%lld, ", i);
     }
     std::cout << "\n";
+    */
 }
 
 std::pair<std::string, std::string> SimpleAlignment::AlignmentStrings() {
@@ -345,9 +346,8 @@ void SimpleAlignment::AddAlignmentToGraph() {
             // didn't find a match
             if (foundMatch == -1) {
                 // add new vertex to the graph
-                newNodeId = graph->AddVertex(base); st_uglyf("Adding aligned-to node! (%lld) \n", newNodeId);
-                // align it to this vertex
-                st_uglyf("aligning it to %lld\n", vertex_id);
+                newNodeId = graph->AddVertex(base); 
+                // align it to this vertex 
                 graph->VertexGetter(newNodeId)->aligned_to.push_back(vertex_id);
                 // and the vertices it's aligned to
                 for (int64_t al: graph->VertexGetter(vertex_id)->aligned_to) {

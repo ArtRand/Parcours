@@ -17,7 +17,7 @@ public:
     // directed arcs (for storing things like labels and weights)
     std::unordered_map<int64_t, DirectedArc*> out_arcs;
     std::unordered_map<int64_t, DirectedArc*> in_arcs;
-
+ 
     // aligned to, other vertex IDs that this node is aligned to, for comparing bases
     std::vector<int64_t> aligned_to;
 

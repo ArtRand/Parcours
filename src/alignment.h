@@ -7,6 +7,7 @@
 
 #include "poa_graph.h"
 #include "dp_matrix.h"
+#include "sequence.h"
 
 typedef enum _move {
     INS = 0,
@@ -16,11 +17,13 @@ typedef enum _move {
 
 /*
  * SimpleAlignment class.
+ * This class is a "machine" for aligning a string to a graph. Used as mainly
+ * for testing against other alignment methods
  */
 class SimpleAlignment {
 public:
     SimpleAlignment(Sequence *S, PoaGraph *G, int64_t (*SubFcn)(char, char));
-
+    
     ~SimpleAlignment() {};
 
     void AlignSequenceToGraph();

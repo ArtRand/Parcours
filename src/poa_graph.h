@@ -8,12 +8,7 @@
 #include "stl_includes.h"
 #include "poa_exceptions.h"
 #include "vertex.h"
-
-
-typedef struct _sequence {
-    std::string seq;
-    std::string label;
-} Sequence;
+#include "sequence.h"
 
 class PoaGraph {
 public:

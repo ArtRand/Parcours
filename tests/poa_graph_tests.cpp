@@ -12,7 +12,7 @@
 TEST_CASE("Test vertex and arcs") {
     for (int64_t i = 0; i < 100; i++) {
         Vertex *v = new Vertex();
-
+  
         // check proper initialization
         REQUIRE(v->Id() == -1);
 
@@ -86,6 +86,11 @@ TEST_CASE("PoaGraph Basic") {
 
         // test we made the correct number of nodes
         REQUIRE(G->K() == seqLen);
+        
+         // test the base sequence
+        for (int64_t i = 0; i < G->Vertices().size(); i++) {
+            REQUIRE(G->VertexGetter(i)->Base() == sequence.at(i));
+        }
 
         // check the start node
         REQUIRE(G->Starts().size() == 1);
@@ -103,6 +108,8 @@ TEST_CASE("PoaGraph Basic") {
             REQUIRE(G->VertexOutDegree(j) == 1);
             REQUIRE(G->VertexInDegree(j) == 1);
         }
+        
+        // cleanup 
         delete G;
         delete S;
     }
@@ -481,6 +488,3 @@ TEST_CASE("Test Initialize Simple Sequence Alignment With Deletes") {
 }
 
 
-// TODO generative test with deletions/insertions of known lengths
-
-// TODO need test with unaligned 'read' sequence
