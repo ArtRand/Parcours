@@ -9,7 +9,7 @@ INC_DIR=include
 TEST_DIR=tests
 BIN_DIR=bin
 
-LIB=hmm_aligner.a
+LIB=libParcours.a
 
 SOURCES=*.cpp
 LIB_SOURCES=$(SRC_DIR)/$(SOURCES)
@@ -26,7 +26,6 @@ pre:
 	mkdir -v -p $(INC_DIR)
 	mkdir -v -p $(BIN_DIR)
 
-
 $(LIB_DIR)/$(LIB): pre
 	$(CXX) $(CFLAGS) -I $(SRC_DIR) -c $(LIB_SOURCES) -g
 	mv *.o $(OBJ_DIR)/
@@ -36,8 +35,8 @@ $(LIB_DIR)/$(LIB): pre
 	cp $(SRC_DIR)/*.h $(INC_DIR)
 
 test: lib
-	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/graphsTests $(testHelpers) $(TEST_DIR)/poa_graph_tests.cpp $(LIB_DIR)/$(LIB)
-	$(BIN_DIR)/graphsTests -d yes
+	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $(TEST_DIR)/poa_graph_tests.cpp $(LIB_DIR)/$(LIB)
+	$(BIN_DIR)/ParcoursLibTests -d yes
 
 #$(poa_graph_lib): $(LIB_SOURCES)
 #	mkdir -v -p $(buildDIR)
