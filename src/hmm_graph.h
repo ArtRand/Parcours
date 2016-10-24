@@ -38,7 +38,7 @@ private:
 // intermediate graph structure
 class HmmGraph {
 public:
-    HmmGraph(): nVertices(0), nb_arcs(0), next_vertex_id(0) {st_uglyf("made HmmGrph\n");};
+    HmmGraph(): nVertices(0), nb_arcs(0), next_vertex_id(0) {st_uglyf("-->Made HmmGraph!!\n");};
 
     ~HmmGraph() {};
 
