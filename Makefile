@@ -1,5 +1,5 @@
-CXX=clang++
-#CXX=g++
+#CXX=clang++
+CXX=g++
 CFLAGS=-Wall -std=c++14
 
 OBJ_DIR=obj
