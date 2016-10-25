@@ -6,53 +6,38 @@
 
 Vertex::Vertex(int64_t i) {
     id = i;
+    node_sequence = nullptr;
 };
 
-Vertex::Vertex(int64_t i, char b) {
-    id = i;
-    base = b;
-}
-
-char Vertex::Base() const {
-    return base;
-}
-
-void Vertex::SetId(int64_t i) {
-    id = i;
-}
-
-int64_t Vertex::Id() const {
-    return id;
-}
-
-bool Vertex::operator < (Vertex other) const {
-    return id == other.id;
-}
-
-// returns true if we added the arc, false if it already existed and we just updated it
-bool Vertex::AddArc(std::unordered_map<int64_t, DirectedArc*>& arcs, int64_t neighborId, std::string label) {
-    // check if this vertex already contains an arc to neighbor, in that case just update the arc label
-    if (arcs.count(neighborId) > 0) {
-        arcs[neighborId]->AddLabel(label);
-        return false;
+Vertex::Vertex(int64_t i, std::string *seq) {
+    if (seq->length() <= 0) {
+        throw ParcoursException("Initializing vertex with empty sequence\n");
     }
-    DirectedArc *a = new DirectedArc(id, neighborId, label);
-    arcs[neighborId] = a;
-    // todo remove after testing
-    assert(arcs.count(neighborId) == 1);
-    return true;
+    id = i;
+    node_sequence = seq;
 }
 
-bool Vertex::AddInArc(int64_t nId, std::string label) {
-    return AddArc(in_arcs, nId, label);
-}
+bool Vertex::operator < (Vertex other) const { return id == other.id; }
 
-bool Vertex::AddOutArc(int64_t nId, std::string label) {
-    return AddArc(out_arcs, nId, label);
-}
+void Vertex::AddInNeighbor(int64_t i) { in_neighbors.insert(i); }
 
-unsigned long Vertex::InDegree() { return in_arcs.size(); }
+void Vertex::AddOutNeighbor(int64_t i) { out_neighbors.insert(i); }
 
-unsigned long Vertex::OutDegree() { return out_arcs.size(); }
+bool Vertex::IsInNeighbor(int64_t n) { return in_neighbors.count(n) > 0; }
 
-std::unordered_map<int64_t, DirectedArc*>& Vertex::OutNeighbors() { return out_arcs; }
+bool Vertex::IsOutNeighbor(int64_t n) { return out_neighbors.count(n) > 0; }
+
+const std::set<int64_t>& Vertex::InNeighbors() const { return in_neighbors; }
+
+const std::set<int64_t>& Vertex::OutNeighbors() const { return out_neighbors; }
+
+void Vertex::SetId(int64_t i) { id = i; }
+
+int64_t Vertex::Id() const { return id; }
+
+std::string *Vertex::Sequence() const { return node_sequence; }
+
+unsigned long Vertex::InDegree() { return in_neighbors.size(); }
+
+unsigned long Vertex::OutDegree() { return out_neighbors.size(); }
+

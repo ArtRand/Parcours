@@ -3,7 +3,7 @@
 //
 
 #include "dp_matrix.h"
-#include "poa_exceptions.h"
+#include "parcours_exceptions.h"
 
 void DpMatrix::dp_matrix_setup(int64_t r, int64_t c) {
     i = r;
@@ -35,14 +35,14 @@ static inline bool checkCoords(int64_t r, int64_t c, int64_t size) {
 
 double DpMatrix::Getter(int64_t r, int64_t c) {
     if (!checkCoords(r, c , size)) {
-        throw GraphException("DpMatrix::Getter - out of bounds\n");
+        throw ParcoursException("DpMatrix::Getter - out of bounds\n");
     }
     return matrix[r * j + c];
 }
 
 void DpMatrix::Setter(int64_t r, int64_t c, double val) {
     if (!checkCoords(r, c , size)) {
-        throw GraphException("DpMatrix::Setter - out of bounds\n");
+        throw ParcoursException("DpMatrix::Setter - out of bounds\n");
     }
     matrix[r * j + c] = val;
 }

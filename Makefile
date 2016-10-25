@@ -35,7 +35,7 @@ $(LIB_DIR)/$(LIB): pre
 	cp $(SRC_DIR)/*.h $(INC_DIR)
 
 test: lib
-	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $(TEST_DIR)/poa_graph_tests.cpp $(LIB_DIR)/$(LIB)
+	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $(TEST_DIR)/ParcoursLibTests.cpp $(LIB_DIR)/$(LIB)
 	$(BIN_DIR)/ParcoursLibTests -d yes
 
 #$(poa_graph_lib): $(LIB_SOURCES)
