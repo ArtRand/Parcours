@@ -44,20 +44,31 @@ public:
 
     bool IsSorted();
 
+    std::set<int64_t> Sources();
+
+    std::set<int64_t> Sinks();
+
+    std::vector<std::deque<int64_t>> AllPaths();
+
 private:
     // containers
     std::unordered_map<int64_t, std::set<int64_t>> adjacentcy_list;
     std::unordered_map<int64_t, Vertex *> vertex_map;  // for looking up vertices
     std::vector<int64_t> vertex_list;  // for ordering
     //std::set<std::string> labels;
-    std::set<std::string *> seqs;
+    //std::set<std::string *> seqs;
     std::vector<int64_t> starts;
+    std::vector<std::deque<int64_t>> paths;
 
     // counters and flags
     int64_t nVertices;
     int64_t nb_arcs;
     int64_t next_vertex_id;
     bool sorted = false;
+    bool initialized_paths = false;
+
+    // internal functions
+    void find_paths();
 };
 
 #endif

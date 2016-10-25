@@ -44,9 +44,12 @@ void HmmGraph::AddArc(int64_t fromId, int64_t toId) {
     // update the from-vertex
     vertex_map[fromId]->AddOutNeighbor(toId);
     // update sort status
+    nb_arcs += 1;
     sorted = false;
     return;
 }
+
+int64_t HmmGraph::K() { return nVertices; }
 
 Vertex *HmmGraph::VertexGetter(int64_t i) {
     if (!ContainsVertex(i)) {
@@ -172,4 +175,93 @@ bool HmmGraph::TestSort() {
     return true;
 }
 
-int64_t HmmGraph::K() { return nVertices; }
+bool HmmGraph::IsSorted() { return sorted; }
+
+std::set<int64_t> HmmGraph::Sources() {
+    std::set<int64_t> sources;
+    for (int64_t id : vertex_list) {
+        if (vertex_map[id]->InDegree() == 0) {
+            sources.insert(id);
+        } 
+    }
+    return sources;
+}
+
+std::set<int64_t> HmmGraph::Sinks() {
+    std::set<int64_t> sinks;
+    for (int64_t id : vertex_list) {
+        if (vertex_map[id]->OutDegree() == 0) {
+            sinks.insert(id);
+        }
+    }
+    return sinks;
+}
+
+void HmmGraph::find_paths() {
+    // we're going to find all the paths from each source to each sink
+    std::set<int64_t> sources = Sources();
+    std::set<int64_t> sinks = Sinks();
+    
+    // preliminary checks
+    TopologicalSort(true);
+    
+    // reverse the vertex list, we're going to go from sink to source
+    std::vector<int64_t> reverse_node_list = vertex_list;
+    std::reverse(reverse_node_list.begin(), reverse_node_list.end());
+
+    //st_uglyf("forward node list: ");
+    //for (auto i : vertex_list) std::cout << i << ", ";
+    //st_uglyf("\n");
+    
+    //st_uglyf("reversed node list: ");
+    //for (auto i : reverse_node_list) std::cout << i << ", ";
+    //st_uglyf("\n");
+
+    for (int64_t sink : sinks) {
+        for (int64_t source : sources) {
+            st_uglyf("Performing dp for sink %lld source %lld\n", sink, source);
+
+            // make a map to hold the dynamic programming intermediates
+            std::map<int64_t, std::vector<std::deque<int64_t>>> path_hash;
+            
+            // base case, for the sink
+            std::deque<int64_t> d { sink };
+            path_hash[sink].push_back(d);
+
+            // walk back to the source
+            for (int64_t i = 1; i < reverse_node_list.size(); i++) {
+                // get the vertex id we're at
+                int64_t vId = reverse_node_list.at(i);
+                st_uglyf("checking %lld\n", vId);
+                // loop over the out-neighbors to this vertex, get their
+                // paths, add this vertex id to them and add those paths to
+                // this vertex's paths
+                for (int64_t out_neighbor_id : vertex_map[vId]->OutNeighbors()) {
+                    for (auto p : path_hash[out_neighbor_id]) {
+                        // copy the path from the neighbor, add this vertex to 
+                        // the start of it, and update the map
+                        std::deque<int64_t> new_path(p);
+                        new_path.push_front(vId);
+                        path_hash[vId].push_back(new_path);
+                    }
+                }
+                if (vId == source) {
+                    paths.insert(paths.end(), path_hash[source].begin(), path_hash[source].end());
+                    st_uglyf("finished: ");
+                    for (auto p : paths) {
+                        for (auto v : p) std::cout << v << ", ";
+                        std::cout << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    initialized_paths = true;
+}
+
+std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
+    if (!initialized_paths) {
+        find_paths();
+    }
+    return paths;
+}
