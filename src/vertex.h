@@ -24,7 +24,7 @@ public:
 
     // constructors
     Vertex(int64_t i);
-    Vertex(int64_t i, std::string *seq);
+    Vertex(int64_t i, const std::string *seq);
     Vertex(const Vertex& other) = default;
     Vertex& operator = (const Vertex& other) = default;
     Vertex(Vertex&& other) = default;
@@ -53,7 +53,7 @@ public:
 
     int64_t Id() const;
 
-    std::string *Sequence() const;
+    const std::string *Sequence() const;
 
     // TODO not sure if I need this anymore
     //bool AddArc(std::unordered_map<int64_t, DirectedArc*>& arcs, int64_t neighborId, std::string label);
@@ -75,7 +75,7 @@ private:
     std::set<int64_t> out_neighbors;
 
     int64_t id;
-    std::string *node_sequence;
+    const std::string *node_sequence;
 };
 
 

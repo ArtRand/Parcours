@@ -9,7 +9,7 @@ Vertex::Vertex(int64_t i) {
     node_sequence = nullptr;
 }
 
-Vertex::Vertex(int64_t i, std::string *seq) {
+Vertex::Vertex(int64_t i, const std::string *seq) {
     if (seq->length() <= 0) {
         throw ParcoursException("Initializing vertex with empty sequence\n");
     }
@@ -58,7 +58,7 @@ void Vertex::SetId(int64_t i) { id = i; }
 
 int64_t Vertex::Id() const { return id; }
 
-std::string *Vertex::Sequence() const { return node_sequence; }
+const std::string *Vertex::Sequence() const { return node_sequence; }
 
 unsigned long Vertex::InDegree() { return in_neighbors.size(); }
 

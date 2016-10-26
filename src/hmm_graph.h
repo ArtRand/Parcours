@@ -33,7 +33,7 @@ public:
     
     HmmGraph& operator = (HmmGraph&& other) = default;
 
-    int64_t AddVertex(std::string *seq);
+    int64_t AddVertex(const std::string *seq);
 
     bool ContainsVertex(int64_t i);
 

@@ -2,7 +2,7 @@
 
 #include "hmm_graph.h"
 
-int64_t HmmGraph::AddVertex(std::string *seq) {
+int64_t HmmGraph::AddVertex(const std::string *seq) {
     // get the next vertex id, a monotonically increasing int
     int64_t vId = next_vertex_id;
 
