@@ -5,6 +5,7 @@
 #ifndef PARCOURS_STL_INCLUDES_H
 #define PARCOURS_STL_INCLUDES_H
 
+#include <memory>
 #include <set>
 #include <algorithm>
 #include <unordered_map>

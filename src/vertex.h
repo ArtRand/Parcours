@@ -25,9 +25,15 @@ public:
     // constructors
     Vertex(int64_t i);
     Vertex(int64_t i, std::string *seq);
-
+    Vertex(const Vertex& other) = default;
+    Vertex& operator = (const Vertex& other) = default;
+    Vertex(Vertex&& other) = default;
+    Vertex& operator = (Vertex&& other) = default;
+    
+    //Vertex(const Vertex& other);
+    //Vertex& operator= (const Vertex& other);
+    //Vertex(Vertex&& other);
     ~Vertex() {};
-    // TODO finish rule-of-five
 
     bool operator < (Vertex other) const;  // tests for equality in vertex ID, does not respect ordering
 

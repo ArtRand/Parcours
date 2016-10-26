@@ -6,13 +6,15 @@ int64_t HmmGraph::AddVertex(std::string *seq) {
     // get the next vertex id, a monotonically increasing int
     int64_t vId = next_vertex_id;
 
-    Vertex *v = new Vertex(vId, seq);
+    //Vertex *v = new Vertex(vId, seq);
+    std::unique_ptr<Vertex> v(new Vertex(vId, seq));
 
     // check, TODO remove after tested
     assert(v->Id() == vId);
 
     // updates to state of graph
-    vertex_map[vId] = v;
+    //vertex_map[vId] = v;
+    vertex_map[vId] = std::move(v);
     vertex_list.push_back(vId);
     nVertices += 1;
     next_vertex_id += 1;
@@ -44,7 +46,7 @@ void HmmGraph::AddArc(int64_t fromId, int64_t toId) {
     // update the from-vertex
     vertex_map[fromId]->AddOutNeighbor(toId);
     // update sort status
-    nb_arcs += 1;
+    nArcs += 1;
     sorted = false;
     return;
 }
@@ -56,16 +58,18 @@ Vertex *HmmGraph::VertexGetter(int64_t i) {
         throw ParcoursException("[HmmGraph::VertexGetter]: Graph doesn't contain vertex %lld", i);
     }
     
-    return vertex_map[i];
+    return vertex_map[i].get();
 
 }
 
 unsigned long HmmGraph::VertexOutDegree(int64_t i) {
-    return VertexGetter(i)->OutDegree();
+    //return VertexGetter(i)->OutDegree();
+    return vertex_map[i]->OutDegree();
 }
 
 unsigned long HmmGraph::VertexInDegree(int64_t i) {
-    return VertexGetter(i)->OutDegree();
+    //return VertexGetter(i)->OutDegree();
+    return vertex_map[i]->OutDegree();
 }
 
 const std::set<int64_t>& HmmGraph::InNeighbors(int64_t i) {
@@ -73,7 +77,8 @@ const std::set<int64_t>& HmmGraph::InNeighbors(int64_t i) {
         throw ParcoursException("[HmmGraph::InNeighbors]: Graph does not contain vertex %lld", i);
     }
 
-    return VertexGetter(i)->InNeighbors();
+    //return VertexGetter(i)->InNeighbors();
+    return vertex_map[i]->InNeighbors();
 }
 
 const std::set<int64_t>& HmmGraph::OutNeighbors(int64_t i) {
@@ -81,9 +86,8 @@ const std::set<int64_t>& HmmGraph::OutNeighbors(int64_t i) {
         throw ParcoursException("[HmmGraph::OutNeighbors]: Graph does not contain vertex %lld", i);
     }
     
-    return VertexGetter(i)->OutNeighbors();
+    return vertex_map[i]->OutNeighbors();
 }
-
 
 const std::vector<int64_t>& HmmGraph::Vertices() {
     return vertex_list;
@@ -197,6 +201,13 @@ std::set<int64_t> HmmGraph::Sinks() {
     return sinks;
 }
 
+std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
+    if (!initialized_paths) {
+        find_paths();
+    }
+    return paths;
+}
+
 void HmmGraph::find_paths() {
     // we're going to find all the paths from each source to each sink
     std::set<int64_t> sources = Sources();
@@ -219,7 +230,7 @@ void HmmGraph::find_paths() {
 
     for (int64_t sink : sinks) {
         for (int64_t source : sources) {
-            st_uglyf("Performing dp for sink %lld source %lld\n", sink, source);
+            //st_uglyf("Performing dp for sink %lld source %lld\n", sink, source);
 
             // make a map to hold the dynamic programming intermediates
             std::map<int64_t, std::vector<std::deque<int64_t>>> path_hash;
@@ -232,7 +243,7 @@ void HmmGraph::find_paths() {
             for (int64_t i = 1; i < reverse_node_list.size(); i++) {
                 // get the vertex id we're at
                 int64_t vId = reverse_node_list.at(i);
-                st_uglyf("checking %lld\n", vId);
+                //st_uglyf("checking %lld\n", vId);
                 // loop over the out-neighbors to this vertex, get their
                 // paths, add this vertex id to them and add those paths to
                 // this vertex's paths
@@ -247,21 +258,14 @@ void HmmGraph::find_paths() {
                 }
                 if (vId == source) {
                     paths.insert(paths.end(), path_hash[source].begin(), path_hash[source].end());
-                    st_uglyf("finished: ");
-                    for (auto p : paths) {
-                        for (auto v : p) std::cout << v << ", ";
-                        std::cout << std::endl;
-                    }
+                    //st_uglyf("finished: \n");
+                    //for (auto p : paths) {
+                    //    for (auto v : p) std::cout << v << ", ";
+                    //    std::cout << std::endl;
+                    //}
                 }
             }
         }
     }
     initialized_paths = true;
-}
-
-std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
-    if (!initialized_paths) {
-        find_paths();
-    }
-    return paths;
 }

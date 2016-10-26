@@ -7,7 +7,7 @@
 Vertex::Vertex(int64_t i) {
     id = i;
     node_sequence = nullptr;
-};
+}
 
 Vertex::Vertex(int64_t i, std::string *seq) {
     if (seq->length() <= 0) {
@@ -17,7 +17,30 @@ Vertex::Vertex(int64_t i, std::string *seq) {
     node_sequence = seq;
 }
 
-bool Vertex::operator < (Vertex other) const { return id == other.id; }
+/*
+Vertex::Vertex(const Vertex& other) {
+    if (&other != this) {
+        in_neighbors = other.InNeighbors();
+        out_neighbors = other.OutNeighbors();
+        id = other.Id();
+        node_sequence = other.Sequence();
+    }
+}
+
+Vertex& Vertex::operator= (const Vertex& other) {
+    in_neighbors = other.InNeighbors();
+    out_neighbors = other.OutNeighbors();
+    id = other.Id();
+    node_sequence = other.Sequence();
+    return *this;
+}
+
+Vertex::Vertex(Vertex&& other): in_neighbors(other.InNeighbors()), out_neighbors(other.OutNeighbors()),
+                                id(other.Id()), node_sequence(other.Sequence()) {}
+
+*/
+
+bool Vertex::operator< (Vertex other) const { return id == other.id; }
 
 void Vertex::AddInNeighbor(int64_t i) { in_neighbors.insert(i); }
 

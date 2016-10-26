@@ -1,6 +1,6 @@
 CXX=clang++
 #CXX=g++
-CFLAGS=-Wall -std=c++14
+CFLAGS=-Wall -std=c++11
 
 OBJ_DIR=obj
 SRC_DIR=src

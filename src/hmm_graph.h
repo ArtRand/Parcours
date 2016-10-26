@@ -12,9 +12,26 @@
 // intermediate graph structure
 class HmmGraph {
 public:
-    HmmGraph(): nVertices(0), nb_arcs(0), next_vertex_id(0) {};
+    HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0) {};
+    
+    ~HmmGraph() {}; 
+   
+    //HmmGraph(const HmmGraph& other) = default;
 
-    ~HmmGraph() {};
+    HmmGraph(const HmmGraph& other) {
+        std::cout << "COPY CONSTRUCTOR!" << std::endl;
+    }
+
+    //HmmGraph& operator = (const HmmGraph& other) = default;
+
+    HmmGraph& operator = (const HmmGraph& other) {
+        std::cout << "COPY ASSIGNMENT" << std::endl;
+        return *this;
+    }
+
+    HmmGraph(HmmGraph&& other) = default;
+    
+    HmmGraph& operator = (HmmGraph&& other) = default;
 
     int64_t AddVertex(std::string *seq);
 
@@ -26,7 +43,7 @@ public:
 
     int64_t K();
 
-    Vertex *VertexGetter(int64_t i);
+    Vertex *VertexGetter(int64_t i);  // caution: returns raw pointer to vertex
 
     unsigned long VertexOutDegree(int64_t i);
 
@@ -49,11 +66,15 @@ public:
     std::set<int64_t> Sinks();
 
     std::vector<std::deque<int64_t>> AllPaths();
+    
+    //friend HmmGraph;
+
+    friend Vertex;
 
 private:
     // containers
     std::unordered_map<int64_t, std::set<int64_t>> adjacentcy_list;
-    std::unordered_map<int64_t, Vertex *> vertex_map;  // for looking up vertices
+    std::unordered_map<int64_t, std::unique_ptr<Vertex>> vertex_map;  // for looking up vertices
     std::vector<int64_t> vertex_list;  // for ordering
     //std::set<std::string> labels;
     //std::set<std::string *> seqs;
@@ -62,7 +83,7 @@ private:
 
     // counters and flags
     int64_t nVertices;
-    int64_t nb_arcs;
+    int64_t nArcs;
     int64_t next_vertex_id;
     bool sorted = false;
     bool initialized_paths = false;
