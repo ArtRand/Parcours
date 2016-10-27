@@ -23,11 +23,11 @@ int64_t HmmGraph::AddVertex(const std::string *seq) {
     return vId;
 }
 
-bool HmmGraph::ContainsVertex(int64_t i) {
+bool HmmGraph::ContainsVertex(int64_t i) const {
     return vertex_map.count(i) != 0;
 }
 
-bool HmmGraph::ContainsVertex(Vertex *v) {
+bool HmmGraph::ContainsVertex(Vertex *v) const {
     return ContainsVertex(v->Id());
 }
 
@@ -51,6 +51,15 @@ void HmmGraph::AddArc(int64_t fromId, int64_t toId) {
     return;
 }
 
+void HmmGraph::SetNextVertexId(int64_t i) {
+    if (nVertices > 0) {
+        throw ParcoursException("[HmmGraph::SetNextVertexId] Cannot set next vertex ID when"
+                                "a graph has already been setup, may screw up ordering");
+    }
+    assert(next_vertex_id == 0);
+    next_vertex_id = i;
+}
+
 int64_t HmmGraph::K() { return nVertices; }
 
 Vertex *HmmGraph::VertexGetter(int64_t i) {
@@ -72,6 +81,13 @@ unsigned long HmmGraph::VertexInDegree(int64_t i) {
     return vertex_map[i]->OutDegree();
 }
 
+const std::string *HmmGraph::VertexSequence(int64_t i) {
+    if (!ContainsVertex(i)) {
+        throw ParcoursException("[HmmGraph::VertexSequence]: Graph does not contain vertex %lld\n", i);
+    }
+    return vertex_map[i]->Sequence();
+}
+
 const std::set<int64_t>& HmmGraph::InNeighbors(int64_t i) {
     if (!ContainsVertex(i)) {
         throw ParcoursException("[HmmGraph::InNeighbors]: Graph does not contain vertex %lld", i);
@@ -89,7 +105,7 @@ const std::set<int64_t>& HmmGraph::OutNeighbors(int64_t i) {
     return vertex_map[i]->OutNeighbors();
 }
 
-const std::vector<int64_t>& HmmGraph::Vertices() {
+const std::vector<int64_t>& HmmGraph::Vertices() const {
     return vertex_list;
 }
 
@@ -269,3 +285,31 @@ void HmmGraph::find_paths() {
     }
     initialized_paths = true;
 }
+
+void HmmGraph::copy_graph(HmmGraph& newer, HmmGraph& other) {
+    // determine the range of the other graph
+    int64_t min_vertex_id = *(std::min_element(begin(other.Vertices()), end(other.Vertices())));
+    int64_t max_vertex_id = *(std::max_element(begin(other.Vertices()), end(other.Vertices())));
+    // move the vertex counter (next_vertex_id) to the minimum 
+    newer.SetNextVertexId(min_vertex_id);
+    // now add each vertex to this graph (+1 here because we want to include the final vertex)
+    for (int64_t i = min_vertex_id; i < max_vertex_id + 1; i++) {
+        try {
+            newer.AddVertex(other.VertexSequence(i));
+        } catch (ParcoursException& e) {
+            std::cerr << e.what() << "\n";
+        }
+    }
+    // now add the arcs
+    for (int64_t id : newer.Vertices()) {
+        for (int64_t n : other.OutNeighbors(id)) {
+            if (newer.VertexSequence(id) != other.VertexSequence(id)) {
+                throw ParcoursException("[HmmGraph copy constructor]: vertex %lld's sequence does not"
+                                        "match expected", id);
+            }
+            newer.AddArc(id, n);
+        }
+    } 
+}
+
+

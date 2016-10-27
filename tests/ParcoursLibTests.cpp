@@ -51,6 +51,7 @@ TEST_CASE("Basic Object Tests", "[lib]") {
 
         REQUIRE(!v.IsInNeighbor(w.Id()));
     }
+
     SECTION("HmmGraph objects can have vertices added to them") {
         std::string v = RandomNucleotides(RandomInt(5, 10));
         std::string w = RandomNucleotides(RandomInt(5, 10));
@@ -65,6 +66,8 @@ TEST_CASE("Basic Object Tests", "[lib]") {
         int64_t n2 = G.AddVertex(&x);
         int64_t n3 = G.AddVertex(&y);
         int64_t n4 = G.AddVertex(&z);
+
+        REQUIRE(G.K() == 5);
     }
     
     SECTION("HmmGraph objects are created, destroyed and sorted correctly") {
@@ -196,8 +199,41 @@ TEST_CASE("Basic Object Tests", "[lib]") {
         REQUIRE(std::find(paths.begin(), paths.end(), p2) != paths.end());
         REQUIRE(std::find(paths.begin(), paths.end(), p3) != paths.end());
 
+        // check that rule-of-five functions work
         HmmGraph G2 = G;
         HmmGraph G3;
         G3 = G;
+
+        auto compare_graphs = [] (HmmGraph& orig, HmmGraph& oth) {
+            REQUIRE(orig.K() == oth.K());
+            for (auto i : orig.Vertices()) {
+                REQUIRE(orig.VertexGetter(i)->Sequence() == oth.VertexGetter(i)->Sequence());
+                REQUIRE(orig.VertexGetter(i)->OutDegree() == oth.VertexGetter(i)->OutDegree());
+                REQUIRE(orig.VertexGetter(i)->InDegree() == oth.VertexGetter(i)->InDegree());
+                if (orig.OutNeighbors(i).size() > 0) {
+                    REQUIRE(oth.OutNeighbors(i).size() > 0);
+                    REQUIRE(oth.OutNeighbors(i) == orig.OutNeighbors(i));
+                } else {
+                    REQUIRE(oth.OutNeighbors(i).size() == 0);
+                }
+                if (orig.InNeighbors(i).size() > 0) {
+                    REQUIRE(oth.InNeighbors(i).size() > 0);
+                    REQUIRE(oth.InNeighbors(i) == orig.InNeighbors(i));
+                } else {
+                    REQUIRE(oth.InNeighbors(i).size() == 0);
+                }
+            }
+            REQUIRE(orig.Sources() == oth.Sources());
+            REQUIRE(orig.Sinks() == oth.Sinks());
+            auto orig_paths = orig.AllPaths();
+            auto oth_paths = oth.AllPaths();
+            REQUIRE(orig_paths.size() == oth_paths.size());
+            for (auto path : orig_paths) {
+                REQUIRE(std::find(begin(oth_paths), end(oth_paths), path) != end(oth_paths));
+            }
+        };
+        compare_graphs(G, G2);
+        compare_graphs(G, G3);
+        compare_graphs(G2, G3);
     }
 }

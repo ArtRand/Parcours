@@ -16,16 +16,14 @@ public:
     
     ~HmmGraph() {}; 
    
-    //HmmGraph(const HmmGraph& other) = default;
-
-    HmmGraph(const HmmGraph& other) {
-        std::cout << "COPY CONSTRUCTOR!" << std::endl;
+    HmmGraph(HmmGraph& other) {
+        copy_graph(*this, other);
     }
 
-    //HmmGraph& operator = (const HmmGraph& other) = default;
-
-    HmmGraph& operator = (const HmmGraph& other) {
-        std::cout << "COPY ASSIGNMENT" << std::endl;
+    HmmGraph& operator = (HmmGraph& other) {
+        if (&other != this) {
+            copy_graph(*this, other);
+        }
         return *this;
     }
 
@@ -35,11 +33,13 @@ public:
 
     int64_t AddVertex(const std::string *seq);
 
-    bool ContainsVertex(int64_t i);
+    bool ContainsVertex(int64_t i) const;
 
-    bool ContainsVertex(Vertex *v);
+    bool ContainsVertex(Vertex *v) const;
 
     void AddArc(int64_t, int64_t);
+    
+    void SetNextVertexId(int64_t i);
 
     int64_t K();
 
@@ -48,12 +48,14 @@ public:
     unsigned long VertexOutDegree(int64_t i);
 
     unsigned long VertexInDegree(int64_t i);
+
+    const std::string *VertexSequence(int64_t i);
     
     const std::set<int64_t>& OutNeighbors(int64_t i);
 
     const std::set<int64_t>& InNeighbors(int64_t i);
 
-    const std::vector<int64_t>& Vertices();
+    const std::vector<int64_t>& Vertices() const;
 
     void TopologicalSort(bool test=false);
 
@@ -90,6 +92,8 @@ private:
 
     // internal functions
     void find_paths();
+
+    void copy_graph(HmmGraph& orig, HmmGraph& other);
 };
 
 #endif
