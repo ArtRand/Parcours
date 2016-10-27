@@ -92,7 +92,6 @@ private:
 
     // internal functions
     void find_paths();
-
     void copy_graph(HmmGraph& orig, HmmGraph& other);
 };
 

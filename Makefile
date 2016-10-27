@@ -3,6 +3,7 @@ CXX=clang++
 CFLAGS=-Wall -std=c++11
 
 OBJ_DIR=obj
+UNITTEST_OBJ_DIR=$(OBJ_DIR)/unittest
 SRC_DIR=src
 LIB_DIR=lib
 INC_DIR=include
@@ -18,10 +19,11 @@ testHelpers=$(testINC)test_helpers.cpp
 #buildDIR=./build/
 #poa_graph_lib=./build/poa_graph_lib.a
 
-.PHONY: all clean lib
+.PHONY: all clean lib test
 
 pre: 
 	mkdir -v -p $(OBJ_DIR)
+	mkdir -v -p $(UNITTEST_OBJ_DIR)
 	mkdir -v -p $(LIB_DIR)
 	mkdir -v -p $(INC_DIR)
 	mkdir -v -p $(BIN_DIR)
@@ -34,8 +36,12 @@ $(LIB_DIR)/$(LIB): pre
 	mv $(LIB) $(LIB_DIR)/
 	cp $(SRC_DIR)/*.h $(INC_DIR)
 
-test: lib
-	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $(TEST_DIR)/ParcoursLibTests.cpp $(LIB_DIR)/$(LIB)
+$(UNITTEST_OBJ_DIR)/hmm_graph_tests.o: $(TEST_DIR)/HmmGraph_tests.cpp 
+	+$(CXX) $(CFLAGS) -c $< -I $(testINC) -I $(INC_DIR) $< 
+	mv HmmGraph_tests.o $@
+
+test: $(LIB_DIR)/$(LIB) $(UNITTEST_OBJ_DIR)/hmm_graph_tests.o $(TEST_DIR)/allTests.cpp
+	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $^ 
 	$(BIN_DIR)/ParcoursLibTests -d yes
 
 #$(poa_graph_lib): $(LIB_SOURCES)
@@ -49,6 +55,7 @@ test: lib
 
 clean:
 	rm -rf $(OBJ_DIR)
+	rm -rf $(UNITTEST_OBJ_DIR)
 	rm -rf $(LIB_DIR)
 	rm -rf $(INC_DIR)
 	rm -rf $(BIN_DIR)
