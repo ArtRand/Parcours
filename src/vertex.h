@@ -6,7 +6,6 @@
 #define PARCOURS_VERTEX_H
 
 #include "stl_includes.h"
-#include "directed_arc.h"
 #include "parcours_exceptions.h"
 /*
  * Vertex class.

@@ -235,7 +235,8 @@ void HmmGraph::find_paths() {
     // reverse the vertex list, we're going to go from sink to source
     std::vector<int64_t> reverse_node_list = vertex_list;
     std::reverse(reverse_node_list.begin(), reverse_node_list.end());
-
+        
+    // TODO delete all this crap once I finish the multi-source/sink unittest
     //st_uglyf("forward node list: ");
     //for (auto i : vertex_list) std::cout << i << ", ";
     //st_uglyf("\n");
@@ -256,7 +257,7 @@ void HmmGraph::find_paths() {
             path_hash[sink].push_back(d);
 
             // walk back to the source
-            for (int64_t i = 1; i < reverse_node_list.size(); i++) {
+            for (uint64_t i = 1; i < reverse_node_list.size(); i++) {
                 // get the vertex id we're at
                 int64_t vId = reverse_node_list.at(i);
                 //st_uglyf("checking %lld\n", vId);
