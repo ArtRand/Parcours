@@ -20,12 +20,12 @@ int64_t Diagonal::MaxXmy() { return xmyR; }
 
 int64_t Diagonal::Width() { return (xmyR - xmyL) / 2 + 1; }
 
-int64_t Diagonal::XCoordinate(int64_t ay, int64_t my) {
+int64_t diagonal_XCoordinate(int64_t ay, int64_t my) {
     if ((ay + my) % 2 != 0) throw ParcoursException("[Diagonal::XCoordinate]: Illegal input\n");
     return (ay + my) / 2;
 }
 
-int64_t Diagonal::YCoordinate(int64_t ay, int64_t my) {
+int64_t diagonal_YCoordinate(int64_t ay, int64_t my) {
     if ((ay + my) % 2 != 0) throw ParcoursException("[Diagonal::YCoordinate]: Illegal input\n");
     return (ay - my) / 2;
 }

@@ -22,11 +22,7 @@ public:
     int64_t MaxXmy();
 
     int64_t Width();
-
-    int64_t XCoordinate(int64_t, int64_t);
-
-    int64_t YCoordinate(int64_t, int64_t);
-
+    
     bool operator == (Diagonal& other) const;
 
 private:
@@ -34,5 +30,9 @@ private:
     int64_t xmyL;
     int64_t xmyR;
 };
+
+int64_t diagonal_XCoordinate(int64_t, int64_t);
+
+int64_t diagonal_YCoordinate(int64_t, int64_t);
 
 #endif

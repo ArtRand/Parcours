@@ -65,3 +65,8 @@ clean:
 	rm -rf $(BIN_DIR)
 
 lib: $(LIB_DIR)/$(LIB)
+
+dryrun: 
+	make clean
+	make test
+	make clean

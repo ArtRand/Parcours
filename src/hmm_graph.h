@@ -80,7 +80,7 @@ private:
     std::vector<int64_t> vertex_list;  // for ordering
     //std::set<std::string> labels;
     //std::set<std::string *> seqs;
-    std::vector<int64_t> starts;
+    //std::vector<int64_t> starts;
     std::vector<std::deque<int64_t>> paths;
 
     // counters and flags

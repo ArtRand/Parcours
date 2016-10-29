@@ -199,21 +199,19 @@ bool HmmGraph::IsSorted() { return sorted; }
 
 std::set<int64_t> HmmGraph::Sources() {
     std::set<int64_t> sources;
-    for (int64_t id : vertex_list) {
-        if (vertex_map[id]->InDegree() == 0) {
-            sources.insert(id);
-        } 
-    }
+    auto is_source = [&] (int64_t id) {
+        if (vertex_map[id]->InDegree() == 0) sources.insert(id);
+    };
+    std::for_each(begin(vertex_list), end(vertex_list), is_source);
     return sources;
 }
 
 std::set<int64_t> HmmGraph::Sinks() {
     std::set<int64_t> sinks;
-    for (int64_t id : vertex_list) {
-        if (vertex_map[id]->OutDegree() == 0) {
-            sinks.insert(id);
-        }
-    }
+    auto is_sink = [&] (int64_t id) {
+        if (vertex_map[id]->OutDegree() == 0) sinks.insert(id);
+    };
+    std::for_each(begin(vertex_list), end(vertex_list), is_sink);
     return sinks;
 }
 
