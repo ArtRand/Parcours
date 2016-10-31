@@ -1,6 +1,6 @@
-#CXX=clang++
-CXX=g++
-CFLAGS=-Wall -std=c++11 
+CXX=clang++
+#CXX=g++-5
+CFLAGS=-Wall -std=c++14 
 
 OBJ_DIR=obj
 UNITTEST_OBJ_DIR=$(OBJ_DIR)/unittest

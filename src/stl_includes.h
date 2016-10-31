@@ -16,5 +16,6 @@
 #include <memory>
 #include <deque>
 #include <map>
+#include <cstdarg>
 
 #endif //PARCOURS_STL_INCLUDES_H

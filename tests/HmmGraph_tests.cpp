@@ -196,12 +196,11 @@ TEST_CASE("Basic Object Tests", "[HmmGraph]") {
         REQUIRE(std::find(paths.begin(), paths.end(), p1) != paths.end());
         REQUIRE(std::find(paths.begin(), paths.end(), p2) != paths.end());
         REQUIRE(std::find(paths.begin(), paths.end(), p3) != paths.end());
-
+            
         // check that rule-of-five functions work
         HmmGraph G2 = G;
         HmmGraph G3;
         G3 = G;
-
         auto compare_graphs = [] (HmmGraph& orig, HmmGraph& oth) {
             REQUIRE(orig.K() == oth.K());
             for (auto i : orig.Vertices()) {

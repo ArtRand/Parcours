@@ -53,8 +53,9 @@ void HmmGraph::AddArc(int64_t fromId, int64_t toId) {
 
 void HmmGraph::SetNextVertexId(int64_t i) {
     if (nVertices > 0) {
-        throw ParcoursException("[HmmGraph::SetNextVertexId] Cannot set next vertex ID when"
-                                "a graph has already been setup, may screw up ordering");
+        throw ParcoursException("[HmmGraph::SetNextVertexId] Cannot set next vertex ID when "
+                                "a graph has already been setup, may screw up ordering, "
+                                " requested %lld, currently have %lld vertices", i, nVertices);
     }
     assert(next_vertex_id == 0);
     next_vertex_id = i;
@@ -285,7 +286,23 @@ void HmmGraph::find_paths() {
     initialized_paths = true;
 }
 
+void HmmGraph::clear_graph() {
+    if (vertex_list.size() > 0 || nVertices > 0 || nArcs > 0) {
+        std::cerr << "[HmmGraph::clear_graph] WARNING: clearning an initialized graph\n";
+    }
+    vertex_list.clear();
+    adjacentcy_list.clear();
+    vertex_map.clear();
+    paths.clear();
+    nVertices = 0;
+    nArcs = 0;
+    next_vertex_id = 0;
+    sorted = false;
+    initialized_paths = false;
+}
+
 void HmmGraph::copy_graph(HmmGraph& newer, HmmGraph& other) {
+    newer.clear_graph();
     // determine the range of the other graph
     int64_t min_vertex_id = *(std::min_element(begin(other.Vertices()), end(other.Vertices())));
     int64_t max_vertex_id = *(std::max_element(begin(other.Vertices()), end(other.Vertices())));

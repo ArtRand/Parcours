@@ -17,10 +17,12 @@ public:
     ~HmmGraph() {}; 
    
     HmmGraph(HmmGraph& other) {
-        copy_graph(*this, other);
+        st_uglyf("SENTINAL: copy constructor!\n");
+        if (&other != this) copy_graph(*this, other);
     }
 
     HmmGraph& operator = (HmmGraph& other) {
+        st_uglyf("SENTINAL: assignment constructor!\n");
         if (&other != this) {
             copy_graph(*this, other);
         }
@@ -93,6 +95,7 @@ private:
     // internal functions
     void find_paths();
     void copy_graph(HmmGraph& orig, HmmGraph& other);
+    void clear_graph();
 };
 
 #endif
