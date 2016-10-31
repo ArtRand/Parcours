@@ -1,6 +1,6 @@
-CXX=clang++
-#CXX=g++
-CFLAGS=-Wall -std=c++11
+#CXX=clang++
+CXX=g++
+CFLAGS=-Wall -std=c++11 
 
 OBJ_DIR=obj
 UNITTEST_OBJ_DIR=$(OBJ_DIR)/unittest
@@ -46,7 +46,9 @@ $(UNITTEST_OBJ_DIR)/pairwise_aligner_tests.o: $(TEST_DIR)/PairwiseAligner_tests.
 
 test: $(LIB_DIR)/$(LIB) $(UNITTEST_OBJ_DIR)/hmm_graph_tests.o $(UNITTEST_OBJ_DIR)/pairwise_aligner_tests.o $(TEST_DIR)/allTests.cpp
 	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $^ 
-	$(BIN_DIR)/ParcoursLibTests -d yes
+	#$(BIN_DIR)/ParcoursLibTests -d yes
+	$(BIN_DIR)/ParcoursLibTests
+
 
 #$(poa_graph_lib): $(LIB_SOURCES)
 #	mkdir -v -p $(buildDIR)
