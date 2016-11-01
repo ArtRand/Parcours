@@ -45,7 +45,7 @@ $(UNITTEST_OBJ_DIR)/pairwise_aligner_tests.o: $(TEST_DIR)/PairwiseAligner_tests.
 	mv PairwiseAligner_tests.o $@
 
 test: $(LIB_DIR)/$(LIB) $(UNITTEST_OBJ_DIR)/hmm_graph_tests.o $(UNITTEST_OBJ_DIR)/pairwise_aligner_tests.o $(TEST_DIR)/allTests.cpp
-	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $^ 
+	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) -L$(LIB_DIR) -lParcours
 	#$(BIN_DIR)/ParcoursLibTests -d yes
 	$(BIN_DIR)/ParcoursLibTests
 
