@@ -6,8 +6,8 @@
 #define PARCOURS_HMM_GRAPH_H
 
 #include "stl_includes.h"
-#include "vertex.h"
 #include "common.h"
+#include "vertex.h"
 
 // intermediate graph structure
 class HmmGraph {
@@ -17,12 +17,10 @@ public:
     ~HmmGraph() {}; 
    
     HmmGraph(HmmGraph& other) {
-        st_uglyf("SENTINAL: copy constructor!\n");
         if (&other != this) copy_graph(*this, other);
     }
 
     HmmGraph& operator = (HmmGraph& other) {
-        st_uglyf("SENTINAL: assignment constructor!\n");
         if (&other != this) {
             copy_graph(*this, other);
         }
@@ -73,7 +71,7 @@ public:
     
     //friend HmmGraph;
 
-    friend Vertex;
+    //friend Vertex;
 
 private:
     // containers

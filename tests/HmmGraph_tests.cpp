@@ -2,7 +2,6 @@
 // Created by Arthur Rand on 10/24/16.
 //
 
-#include "Vertex.h"
 #include "hmm_graph.h"
 #include "catch.hpp"
 #include "test_helpers.h"
