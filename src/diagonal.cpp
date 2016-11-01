@@ -3,7 +3,7 @@
 Diagonal::Diagonal(int64_t ay, int64_t L, int64_t R) {
     if ((ay + L) % 2 != 0 || (ay + R) % 2 != 0 || L > R) {
         throw ParcoursException("[Diagonal::Diagonal]: Trying to make Diagonal with invalid "
-                                "coordinates xay=%lld, xmyL=%lld, xmyR=%lld\n", ay, L, R);
+                                "coordinates xay=%" PRIi64 ", xmyL=%" PRIi64 ", xmyR=%" PRIi64 "\n", ay, L, R);
     }
     xay = ay;
     xmyL = L;

@@ -33,11 +33,11 @@ bool HmmGraph::ContainsVertex(Vertex *v) const {
 
 void HmmGraph::AddArc(int64_t fromId, int64_t toId) {
     if (!ContainsVertex(fromId)) {
-        throw ParcoursException("[HmmGraph::AddArc]: Missing from vertex %lld", fromId);
+        throw ParcoursException("[HmmGraph::AddArc]: Missing from vertex %" PRIi64 "", fromId);
     }
 
     if (!ContainsVertex(toId)) {
-        throw ParcoursException("[HmmGraph::AddArc]: Missing to vertex %lld", toId);
+        throw ParcoursException("[HmmGraph::AddArc]: Missing to vertex %" PRIi64 "", toId);
     }
     // update adjacentcy list
     adjacentcy_list[fromId].insert(toId);
@@ -55,7 +55,7 @@ void HmmGraph::SetNextVertexId(int64_t i) {
     if (nVertices > 0) {
         throw ParcoursException("[HmmGraph::SetNextVertexId] Cannot set next vertex ID when "
                                 "a graph has already been setup, may screw up ordering, "
-                                " requested %lld, currently have %lld vertices", i, nVertices);
+                                " requested %" PRIi64 ", currently have %" PRIi64 "vertices", i, nVertices);
     }
     assert(next_vertex_id == 0);
     next_vertex_id = i;
@@ -65,7 +65,7 @@ int64_t HmmGraph::K() { return nVertices; }
 
 Vertex *HmmGraph::VertexGetter(int64_t i) {
     if (!ContainsVertex(i)) {
-        throw ParcoursException("[HmmGraph::VertexGetter]: Graph doesn't contain vertex %lld", i);
+        throw ParcoursException("[HmmGraph::VertexGetter]: Graph doesn't contain vertex %" PRIi64 "", i);
     }
     
     return vertex_map[i].get();
@@ -84,14 +84,14 @@ unsigned long HmmGraph::VertexInDegree(int64_t i) {
 
 const std::string *HmmGraph::VertexSequence(int64_t i) {
     if (!ContainsVertex(i)) {
-        throw ParcoursException("[HmmGraph::VertexSequence]: Graph does not contain vertex %lld\n", i);
+        throw ParcoursException("[HmmGraph::VertexSequence]: Graph does not contain vertex %" PRIi64 "", i);
     }
     return vertex_map[i]->Sequence();
 }
 
 const std::set<int64_t>& HmmGraph::InNeighbors(int64_t i) {
     if (!ContainsVertex(i)) {
-        throw ParcoursException("[HmmGraph::InNeighbors]: Graph does not contain vertex %lld", i);
+        throw ParcoursException("[HmmGraph::InNeighbors]: Graph does not contain vertex %" PRIi64 "", i);
     }
 
     //return VertexGetter(i)->InNeighbors();
@@ -100,7 +100,7 @@ const std::set<int64_t>& HmmGraph::InNeighbors(int64_t i) {
 
 const std::set<int64_t>& HmmGraph::OutNeighbors(int64_t i) {
     if (!ContainsVertex(i)) {
-        throw ParcoursException("[HmmGraph::OutNeighbors]: Graph does not contain vertex %lld", i);
+        throw ParcoursException("[HmmGraph::OutNeighbors]: Graph does not contain vertex %" PRIi64 "", i);
     }
     
     return vertex_map[i]->OutNeighbors();
@@ -320,7 +320,7 @@ void HmmGraph::copy_graph(HmmGraph& newer, HmmGraph& other) {
     for (int64_t id : newer.Vertices()) {
         for (int64_t n : other.OutNeighbors(id)) {
             if (newer.VertexSequence(id) != other.VertexSequence(id)) {
-                throw ParcoursException("[HmmGraph copy constructor]: vertex %lld's sequence does not"
+                throw ParcoursException("[HmmGraph copy constructor]: vertex %" PRIi64 "'s sequence does not"
                                         "match expected", id);
             }
             newer.AddArc(id, n);

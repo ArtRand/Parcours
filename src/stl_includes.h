@@ -17,5 +17,5 @@
 #include <deque>
 #include <map>
 #include <cstdarg>
-
+#include <inttypes.h>
 #endif //PARCOURS_STL_INCLUDES_H

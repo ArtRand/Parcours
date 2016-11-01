@@ -4,7 +4,7 @@
 Band::Band(std::vector<std::pair<int64_t, int64_t>> anchors, int64_t lX, int64_t lY, int64_t expansion): index(0) {
     if (lX <= 0 || lY <= 0 || expansion % 2 != 0) {
         throw ParcoursException("[Band::Band] Illegal band construct input: \n"
-                                "lX: %lld lY: %lld, expansion %lld\n", lX, lY, expansion);
+                                "lX: %" PRIi64 " lY: %" PRIi64 ", expansion %" PRIi64 "\n", lX, lY, expansion);
     }
 
     diagonals.reserve(lX + lY + 1);
@@ -90,7 +90,7 @@ Band::Band(std::vector<std::pair<int64_t, int64_t>> anchors, int64_t lX, int64_t
 
 Diagonal Band::Next() {
     int64_t idx_check = index > maxLxLy ? maxLxLy : index;
-    st_uglyf("getting next diagonal at %lld\n", idx_check);
+    st_uglyf("getting next diagonal at %" PRIi64 "\n", idx_check);
     if (index <= maxLxLy) index++;
     return diagonals.at(idx_check);
 }
