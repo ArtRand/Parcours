@@ -1,11 +1,13 @@
 // Pairwise aligner tests
 //
 
-
+#include "logAdd.h"
 #include "catch.hpp"
 #include "diagonal.h"
 #include "band.h"
 #include "common.h"
+#include "stateMachine.h"
+#include "test_helpers.h"
 
 TEST_CASE("Diagonal Tests", "[PairwiseAligner]") {
     int64_t xL = 10, yL = 20, xU = 30, yU = 0; //Coordinates of the upper and lower
@@ -32,21 +34,68 @@ TEST_CASE("Band Tests", "[PairwiseAligner]") {
     Band b(anchors, lX, lY, expansion);
     
     // Forward pass
-    
-    Diagonal d(0, 0, 0); REQUIRE(b.Next() == d);
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(0, 0, 0)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(1, -1, 1)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(2, -2, 2)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(3, -1, 3)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(4, -2, 4)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(5, -1, 3)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(6, -2, 4)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(7, -3, 3)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(8, -2, 2)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(9, -1, 3)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(10, 0, 2)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(11, 1, 1)));
-    //CuAssertTrue(testCase, testDiagonalsEqual(bandIterator_getNext(bandIt), diagonal_construct(11, 1, 1)));
+    Diagonal d0(0, 0, 0); REQUIRE(b.Next() == d0);
+    Diagonal d1(1, -1, 1); REQUIRE(b.Next() == d1);
+    Diagonal d2(2, -2, 2); REQUIRE(b.Next() == d2);
+    Diagonal d3(3, -1, 3); REQUIRE(b.Next() == d3);
+    Diagonal d4(4, -2, 4); REQUIRE(b.Next() == d4);
+    Diagonal d5(5, -1, 3); REQUIRE(b.Next() == d5);
+    Diagonal d6(6, -2, 4); REQUIRE(b.Next() == d6);
+    Diagonal d7(7, -3, 3); REQUIRE(b.Next() == d7);
+    Diagonal d8(8, -2, 2); REQUIRE(b.Next() == d8);
+    Diagonal d9(9, -1, 3); REQUIRE(b.Next() == d9);
+    Diagonal d10(10, -0, 2); REQUIRE(b.Next() == d10);
+    Diagonal d11(11, 1, 1); REQUIRE(b.Next() == d11);
+    Diagonal d12(11, 1, 1); REQUIRE(b.Next() == d12);
 
+    // Go backward
+    REQUIRE(b.Previous() == d11);
+    REQUIRE(b.Previous() == d10);
+    REQUIRE(b.Previous() == d9);
+    REQUIRE(b.Previous() == d8);
+    REQUIRE(b.Previous() == d7);
+    
+    // Go forward again
+    REQUIRE(b.Next() == d7);
+    REQUIRE(b.Next() == d8);
+    REQUIRE(b.Next() == d9);
+    REQUIRE(b.Next() == d10);
+    
+    //Now carry on back again
+    REQUIRE(b.Previous() == d10);
+    REQUIRE(b.Previous() == d9);
+    REQUIRE(b.Previous() == d8);
+    REQUIRE(b.Previous() == d7);
+    REQUIRE(b.Previous() == d6);
+    REQUIRE(b.Previous() == d5);
+    REQUIRE(b.Previous() == d4);
+    REQUIRE(b.Previous() == d3);
+    REQUIRE(b.Previous() == d2);
+    REQUIRE(b.Previous() == d1);
+    REQUIRE(b.Previous() == d0);
+    
+    REQUIRE(b.Next() == d0);
+    REQUIRE(b.Next() == d1);
+
+    REQUIRE(b.Previous() == d1);
+    REQUIRE(b.Previous() == d0);
 }
 
+TEST_CASE("LogAdd Tests", "[NumericTests]") {
+    for (int64_t test = 0; test < 100000; test++) {
+        double i = RandomDouble();
+        double j = RandomDouble();
+        double k = i + j;
+        double l = exp(logAdd(log(i), log(j)));
+        REQUIRE(l < k + 0.001);
+        REQUIRE(l > k - 0.001);
+    }
+}
+
+TEST_CASE("Test Cell", "[DpTests]") {
+    StateMachine5<4> sM5;
+    sM5.StateNumberGetter();
+    st_uglyf("stateNumber %" PRIi64 "\n", sM5.StateNumberGetter());
+    double p = sM5.StartStateProb(match, false);
+    st_uglyf("start state prob %" PRIi64 "\n");
+}

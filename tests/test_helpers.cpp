@@ -9,6 +9,12 @@ int64_t RandomInt(int64_t min, int64_t max) {
     return rand() % (max - min + 1) + min;
 }
 
+double RandomDouble() {
+    std::default_random_engine generator(std::time(0));
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
+    return dist(generator);
+}
+
 // credit: http://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
 static std::string randomString(int64_t length, std::string alphabet) {
     thread_local static std::mt19937 rg{std::random_device{}()};

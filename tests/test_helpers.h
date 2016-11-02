@@ -9,6 +9,7 @@
 
 int64_t RandomInt(int64_t min, int64_t max);
 std::string RandomString(int64_t length);
+double RandomDouble();
 std::string RandomNucleotides(int64_t length);
 
 #endif //PARCOURS_TEST_HELPERS_H

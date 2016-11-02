@@ -1,4 +1,9 @@
-CXX=clang++
+ifeq ($(shell uname -s),Darwin)
+	CXX=g++
+else
+	CXX=g++
+endif
+#CXX=clang++
 #CXX=g++-5
 CFLAGS=-Wall -std=c++11
 
@@ -48,16 +53,6 @@ test: $(LIB_DIR)/$(LIB) $(UNITTEST_OBJ_DIR)/hmm_graph_tests.o $(UNITTEST_OBJ_DIR
 	$(CXX) $(CFLAGS) -I $(INC_DIR) -I $(testINC) -o $(BIN_DIR)/ParcoursLibTests $(testHelpers) $^ -L$(LIB_DIR) -lParcours
 	#$(BIN_DIR)/ParcoursLibTests -d yes
 	$(BIN_DIR)/ParcoursLibTests
-
-
-#$(poa_graph_lib): $(LIB_SOURCES)
-#	mkdir -v -p $(buildDIR)
-#	$(CXX) $(CFLAGS) -I $(INC) -c $(LIB_SOURCES) -g 
-#	ar rc poa_graph_lib.a *.o
-#	ranlib poa_graph_lib.a
-#	rm *.o
-#	cp $(INC)*.h $(buildDIR)
-#	mv poa_graph_lib.a $(buildDIR)
 
 clean:
 	rm -rf $(OBJ_DIR)

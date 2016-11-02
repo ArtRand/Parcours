@@ -18,4 +18,6 @@
 #include <map>
 #include <cstdarg>
 #include <inttypes.h>
+#include <limits>
+#include <array>
 #endif //PARCOURS_STL_INCLUDES_H

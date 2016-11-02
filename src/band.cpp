@@ -90,7 +90,6 @@ Band::Band(std::vector<std::pair<int64_t, int64_t>> anchors, int64_t lX, int64_t
 
 Diagonal Band::Next() {
     int64_t idx_check = index > maxLxLy ? maxLxLy : index;
-    st_uglyf("getting next diagonal at %" PRIi64 "\n", idx_check);
     if (index <= maxLxLy) index++;
     return diagonals.at(idx_check);
 }
