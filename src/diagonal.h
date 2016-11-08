@@ -2,8 +2,8 @@
 // banded_dp_matrix.h
 //
 
-#ifndef PARCOURS_BANDED_DP_MATRIX_H
-#define PARCOURS_BANDED_DP_MATRIX_H
+#ifndef PARCOURS_DIAGONAL_H
+#define PARCOURS_DIAGONAL_H
 
 #include "stl_includes.h"
 #include "parcours_exceptions.h"
@@ -35,4 +35,4 @@ int64_t diagonal_XCoordinate(int64_t, int64_t);
 
 int64_t diagonal_YCoordinate(int64_t, int64_t);
 
-#endif
+#endif // PARCOURS_DIAGONAL_H

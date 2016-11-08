@@ -1,7 +1,9 @@
 #include "band.h"
 #include "common.h"
 
-Band::Band(std::vector<std::pair<int64_t, int64_t>> anchors, int64_t lX, int64_t lY, int64_t expansion): index(0) {
+template<class T, size_t sn>
+Band<T, sn>::Band(std::vector<std::pair<int64_t, int64_t>> anchors, 
+                  int64_t lX, int64_t lY, int64_t expansion): index(0) {
     if (lX <= 0 || lY <= 0 || expansion % 2 != 0) {
         throw ParcoursException("[Band::Band] Illegal band construct input: \n"
                                 "lX: %" PRIi64 " lY: %" PRIi64 ", expansion %" PRIi64 "\n", lX, lY, expansion);
@@ -44,7 +46,7 @@ Band::Band(std::vector<std::pair<int64_t, int64_t>> anchors, int64_t lX, int64_t
         xmyR = set_boundary(xmyR, xU, diagonal_XCoordinate(XaY, xmyR), -1);
         xmyR = set_boundary(xmyR, diagonal_YCoordinate(XaY, xmyR), yU, -1);
         
-        Diagonal d(XaY, xmyL, xmyR);
+        DpDiagonal<T, sn> d(XaY, xmyL, xmyR);
         diagonals.insert(begin(diagonals) + XaY, d);
     };
     
@@ -83,18 +85,21 @@ Band::Band(std::vector<std::pair<int64_t, int64_t>> anchors, int64_t lX, int64_t
             yL = bound_coordinate(diagonal_YCoordinate(nxay, nxmy - expansion), lY);
             xU = bound_coordinate(diagonal_XCoordinate(nxay, nxmy + expansion), lX);
             yU = bound_coordinate(diagonal_YCoordinate(pxay, pxmy + expansion), lY);
-
         }
     }
 }
 
-Diagonal Band::Next() {
+template<class T, size_t sn>
+Diagonal Band<T, sn>::Next() {
     int64_t idx_check = index > maxLxLy ? maxLxLy : index;
     if (index <= maxLxLy) index++;
-    return diagonals.at(idx_check);
+    return diagonals.at(idx_check).DiagonalGetter();
 }
 
-Diagonal Band::Previous() {
+template<class T, size_t sn>
+Diagonal Band<T, sn>::Previous() {
     if (index > 0) index--;
-    return diagonals.at(index);
+    return diagonals.at(index).DiagonalGetter();
 }
+
+template class Band<double, 5>;

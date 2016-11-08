@@ -31,7 +31,7 @@ TEST_CASE("Band Tests", "[PairwiseAligner]") {
     anchors.push_back(std::make_pair(2, 1));
     anchors.push_back(std::make_pair(3, 3));
     int64_t lX = 6, lY = 5, expansion = 2;
-    Band b(anchors, lX, lY, expansion);
+    Band<double, 5> b(anchors, lX, lY, expansion);
     
     // Forward pass
     Diagonal d0(0, 0, 0); REQUIRE(b.Next() == d0);
@@ -93,9 +93,53 @@ TEST_CASE("LogAdd Tests", "[NumericTests]") {
 }
 
 TEST_CASE("Test Cell", "[DpTests]") {
-    StateMachine5<4> sM5;
-    sM5.StateNumberGetter();
-    st_uglyf("stateNumber %" PRIi64 "\n", sM5.StateNumberGetter());
-    double p = sM5.StartStateProb(match, false);
-    st_uglyf("start state prob %" PRIi64 "\n");
+    StateMachine5<nucleotide> sM5;
+    REQUIRE(sM5.StateNumber() == 5);
+}
+
+TEST_CASE("Test DpDiagonal", "[DpTests]") {
+    SECTION("DpDiagonal is initialized, copied, and has functional getters and setters") {
+        StateMachine5<nucleotide> sM5;
+        // test equality
+        DpDiagonal<double, 5> d(3, -1, 1);
+        DpDiagonal<double, 5> d2 = d;
+        REQUIRE(d == d2);
+        DpDiagonal<double, 5> d3 = d;  // copy constructor
+        REQUIRE(d3 == d);
+        DpDiagonal<double, 5> d4(0, 0, 0);
+        REQUIRE(!(d4 == d));
+        d4 = d;  // copy assignment
+        REQUIRE(d4 == d);
+    
+        // test cell getter
+        double c1 = d.CellGetter(-1, match);
+        REQUIRE(!std::isnan(c1));
+        double c2 = d.CellGetter(1, match);
+        REQUIRE(!std::isnan(c2));
+        REQUIRE(std::isnan(d.CellGetter(3, match)));
+        REQUIRE(std::isnan(d.CellGetter(-3, match)));
+    
+        // test set values
+        double x = RandomDouble();  
+        REQUIRE(d.CellCheck(-1));
+        d.CellSetter(-1, match, x);
+        REQUIRE(d.CellGetter(-1, match) == x);
+    }
+    SECTION("DpDiagonal initialize values and dot product work as expected") {
+        // test initialize values
+        StateMachine5<nucleotide> sM5;
+        DpDiagonal<double, 5> d(3, -1, 1);
+        //std::function<double(HiddenState, bool)> func = [&] (HiddenState s, bool re) -> double {
+        //    return sM5.EndStateProb(s, re);
+        //};
+        //d.InitValues(func);
+        d.InitValues(sM5.EndStateProbFcn());;
+        double total_prob = LOG_ZERO;
+        for (int64_t s = 0; s < sM5.StateNumber(); s++) {
+            double c1 = d.CellGetter(-1, static_cast<HiddenState>(s));
+            double c2 = d.CellGetter(1, static_cast<HiddenState>(s));
+            REQUIRE(c1 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
+            REQUIRE(c2 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
+        }
+    }
 }

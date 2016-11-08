@@ -19,5 +19,6 @@
 #include <cstdarg>
 #include <inttypes.h>
 #include <limits>
+#include <cmath>
 #include <array>
 #endif //PARCOURS_STL_INCLUDES_H

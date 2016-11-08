@@ -12,6 +12,7 @@
 // intermediate graph structure
 class HmmGraph {
 public:
+    // TODO move these to cpp, for consistency 
     HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0) {};
     
     ~HmmGraph() {}; 
