@@ -12,12 +12,6 @@ class DpDiagonal {
 public:
     DpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR);
 
-    //~DpDiagonal() = default;
-
-    //DpDiagonal(DpDiagonal& other) = default;
-
-    //DpDiagonal& operator = (DpDiagonal& other) = default;
-    
     bool operator == (DpDiagonal& other) const;
     
     Diagonal DiagonalGetter() const;
@@ -30,9 +24,10 @@ public:
 
     void CellSetter(int64_t xmy, HiddenState s, T value);
     
-    //void InitValues(StateMachine5<set_size>& sm, double (*StateValueGetter)(HiddenState state, bool ragged));
     void InitValues(std::function<double(HiddenState s, bool re)> StateValueGetter);
     
+    T Dot(DpDiagonal& d2);
+
     int64_t StateNumber();
 
 private:

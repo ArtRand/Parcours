@@ -49,7 +49,6 @@ bool DpDiagonal<T, sn>::CellCheck(int64_t xmy) {
 }
 
 template<class T, size_t sn> 
-//void DpDiagonal<T, sn>::InitValues(StateMachine5& sm, double (*StateValueGetter)(HiddenState state, bool ragged)) {
 void DpDiagonal<T, sn>::InitValues(std::function<double(HiddenState s, bool re)> StateValueGetter) {
     for (int64_t i = diagonal.MinXmy(); i <= diagonal.MaxXmy(); i +=2) {
         assert(CellCheck(i));
@@ -57,6 +56,22 @@ void DpDiagonal<T, sn>::InitValues(std::function<double(HiddenState s, bool re)>
             CellSetter(i, static_cast<HiddenState>(s), StateValueGetter(static_cast<HiddenState>(s), false));
         }
     }
+}
+
+template<class T, size_t sn>
+T DpDiagonal<T, sn>::Dot(DpDiagonal& d2) {
+    double total_prob = LOG_ZERO;
+    int64_t xmy = diagonal.MinXmy();
+    while (xmy <= diagonal.MaxXmy()) {
+        double p = CellGetter(xmy, match) + d2.CellGetter(xmy, match);
+        for (int64_t s = 1; s < _state_number; s++) {
+            p = logAdd(p, (CellGetter(xmy, static_cast<HiddenState>(s)) 
+                           + d2.CellGetter(xmy, static_cast<HiddenState>(s))));
+        }
+        total_prob = logAdd(total_prob, p);
+        xmy += 2;
+    }
+    return total_prob;
 }
 
 template<class T, size_t sn>

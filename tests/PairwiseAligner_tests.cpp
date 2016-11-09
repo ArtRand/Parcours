@@ -140,6 +140,12 @@ TEST_CASE("Test DpDiagonal", "[DpTests]") {
             double c2 = d.CellGetter(1, static_cast<HiddenState>(s));
             REQUIRE(c1 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
             REQUIRE(c2 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
+            total_prob = logAdd(total_prob, 2 * c1);
+            total_prob = logAdd(total_prob, 2 * c2);
         }
+        DpDiagonal<double, 5> d2 = d;
+        double tp = d.Dot(d2);
+        //REQUIRE(total_prob - tp < 0.001);
+        REQUIRE(total_prob - d.Dot(d2) < 0.001);
     }
 }
