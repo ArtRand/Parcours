@@ -6,6 +6,7 @@
 #include "diagonal.h"
 #include "band.h"
 #include "common.h"
+#include "dpMatrix.h"
 #include "stateMachine.h"
 #include "test_helpers.h"
 
@@ -128,11 +129,7 @@ TEST_CASE("Test DpDiagonal", "[DpTests]") {
     SECTION("DpDiagonal initialize values and dot product work as expected") {
         // test initialize values
         StateMachine5<nucleotide> sM5;
-        DpDiagonal<double, 5> d(3, -1, 1);
-        //std::function<double(HiddenState, bool)> func = [&] (HiddenState s, bool re) -> double {
-        //    return sM5.EndStateProb(s, re);
-        //};
-        //d.InitValues(func);
+        DpDiagonal<double, fiveState> d(3, -1, 1);
         d.InitValues(sM5.EndStateProbFcn());;
         double total_prob = LOG_ZERO;
         for (int64_t s = 0; s < sM5.StateNumber(); s++) {
@@ -145,7 +142,46 @@ TEST_CASE("Test DpDiagonal", "[DpTests]") {
         }
         DpDiagonal<double, 5> d2 = d;
         double tp = d.Dot(d2);
-        //REQUIRE(total_prob - tp < 0.001);
-        REQUIRE(total_prob - d.Dot(d2) < 0.001);
+        REQUIRE(std::abs(total_prob - tp) < 0.001);
     }
 }
+
+TEST_CASE("Test DpMatrix", "[DpTests]") {
+    SECTION("DpMatrix is constructed with correct defaults") {
+        int64_t x = RandomInt(10, 20);
+        DpMatrix<double, fiveState> mat(x);
+        REQUIRE(mat.ActiveDiagonals() == 0);
+        REQUIRE(mat.DiagonalNumber() == x);
+    }
+    SECTION("DpMatrix main tests") {
+        int64_t lX = 3;
+        int64_t lY = 2;
+
+        DpMatrix<double, fiveState> mat(lX + lY);
+
+        REQUIRE(mat.ActiveDiagonals() == 0);
+        
+        // check for 'fantom' diagonals
+        for (int64_t i = -1; i <= lX + lY + 10; i++) {
+            REQUIRE_THROWS_AS(mat.DpDiagonalGetter(i), ParcoursException);
+        }
+
+        // make some diagonals in the dpMatrix, and check them, then make sure that
+        // the number of active diagonals is correct.
+        for (int64_t i = 0; i <= lX + lY; i++) {
+            mat.CreateDpDiagonal(i, -i, i);
+            DpDiagonal<double, fiveState> d(i, -i, i);
+            REQUIRE(mat.DpDiagonalGetter(i) == d);
+            REQUIRE(mat.ActiveDiagonals() == i + 1);
+        }
+
+        // delete the diagonals
+        for (int64_t i = lX + lY; i >= 0; i--) {
+            mat.DeleteDpDiagonal(i);
+            REQUIRE(!mat.DpDiagonalGetter(i).IsActive());
+            REQUIRE(mat.ActiveDiagonals() == i);
+        }
+    }
+}
+
+

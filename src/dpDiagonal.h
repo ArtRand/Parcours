@@ -30,11 +30,18 @@ public:
 
     int64_t StateNumber();
 
+    bool IsActive();
+
+    void Deactivate();
+
+    void Activate();
+
 private:
     int64_t state_index(int64_t xmy, HiddenState s);
     Diagonal diagonal;
     std::vector<T> cells;
     int64_t _state_number = sn;
+    bool active;
 };
 
 #endif // PARCOURS_DP_DIAGONAL_H

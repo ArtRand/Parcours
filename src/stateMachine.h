@@ -17,6 +17,10 @@ typedef enum _set_types {
     nucleotide = 4,
 } SetType;
 
+typedef enum _statemachine_type {
+    fiveState = 5,
+} StateMachineType;
+
 template<size_t set_size, size_t state_number>
 class StateMachine {
 protected:
@@ -29,7 +33,9 @@ protected:
     // TODO fill this in.. unless it's always overridden 
     //virtual void CellCalculate() = 0;
 
-    virtual int64_t StateNumber() = 0;
+    virtual const int64_t StateNumber() const = 0;
+
+    //virtual constexpr StateMachineType Type() const = 0;
     
     std::array<double, set_size> match_probs;
 
@@ -53,8 +59,10 @@ public:
     
     std::function<double(HiddenState state, bool ragged_end)> StartStateProbFcn();
 
-    int64_t StateNumber();
-
+    const int64_t StateNumber() const;
+    
+    StateMachineType type;
+    //constexpr StateMachineType Type() const;
     //void CellCalculate();
     
 private:

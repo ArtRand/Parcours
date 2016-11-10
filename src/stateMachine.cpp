@@ -26,12 +26,18 @@ StateMachine5<set_size>::StateMachine5() {
     TRANSITION_GAP_LONG_OPEN_Y =        TRANSITION_GAP_LONG_OPEN_X;
     TRANSITION_GAP_LONG_EXTEND_Y =      TRANSITION_GAP_LONG_EXTEND_X;
     TRANSITION_GAP_LONG_SWITCH_TO_Y =   TRANSITION_GAP_LONG_SWITCH_TO_X;
+
+    type = fiveState;
 }
 
 template<size_t set_size>
-int64_t StateMachine5<set_size>::StateNumber() {
-    return StateMachine<set_size, 5>::_state_number;
+const int64_t StateMachine5<set_size>::StateNumber() const {
+    //return StateMachine<set_size, 5>::_state_number;
+    return 5;
 }
+
+//template<size_t set_size>
+//constexpr StateMachineType StateMachine5<set_size>::Type() const { return fiveState; }
 
 template<size_t set_size>
 double StateMachine5<set_size>::StartStateProb(HiddenState state, bool ragged_end) {
