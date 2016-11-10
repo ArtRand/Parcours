@@ -204,8 +204,6 @@ EmissionsInitFunction<nucleotide> SetNucleotideEmissionsToDefauts() {
     return lambda;
 }
 
-
-
 template class StateMachine5<nucleotide>;
 template class StateMachine<nucleotide, fiveState>;
 

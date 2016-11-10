@@ -3,7 +3,7 @@
 #ifndef PARCOURS_BAND_H
 #define PARCOURS_BAND_H
 
-#include "DpDiagonal.h"
+#include "dpDiagonal.h"
 #include "stl_includes.h"
 
 template<class T, size_t sn>
