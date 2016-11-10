@@ -96,6 +96,8 @@ TEST_CASE("LogAdd Tests", "[NumericTests]") {
 TEST_CASE("Test Cell", "[DpTests]") {
     StateMachine5<nucleotide> sM5;
     REQUIRE(sM5.StateNumber() == 5);
+
+    
 }
 
 TEST_CASE("Test DpDiagonal", "[DpTests]") {
@@ -113,18 +115,33 @@ TEST_CASE("Test DpDiagonal", "[DpTests]") {
         REQUIRE(d4 == d);
     
         // test cell getter
-        double c1 = d.CellGetter(-1, match);
-        REQUIRE(!std::isnan(c1));
-        double c2 = d.CellGetter(1, match);
-        REQUIRE(!std::isnan(c2));
-        REQUIRE(std::isnan(d.CellGetter(3, match)));
-        REQUIRE(std::isnan(d.CellGetter(-3, match)));
+        auto check_cell = [&] (int64_t xay) -> void {
+            for (int64_t s = 0; s < sM5.StateNumber(); s++) {
+                double c1 = d.CellGetVal(xay, static_cast<HiddenState>(s));
+                REQUIRE(!std::isnan(c1));
+                REQUIRE((d.CellGetter(xay) + s) != NULL);
+                double c1_1 = *(d.CellGetter(xay) + s);
+                REQUIRE(c1 == c1_1);
+            }
+        };
+
+        int64_t w, x, y, z;
+        w = -1;
+        check_cell(w);
+        x = 1;
+        check_cell(x);
+        y = 3;
+        z = -3;
+        REQUIRE(std::isnan(d.CellGetVal(y, match)));
+        REQUIRE(std::isnan(d.CellGetVal(z, match)));
+        REQUIRE(d.CellGetter(y) == NULL);
+        REQUIRE(d.CellGetter(z) == NULL);
     
         // test set values
-        double x = RandomDouble();  
+        double q = RandomDouble();  
         REQUIRE(d.CellCheck(-1));
-        d.CellSetter(-1, match, x);
-        REQUIRE(d.CellGetter(-1, match) == x);
+        d.CellSetter(-1, match, q);
+        REQUIRE(d.CellGetVal(-1, match) == q);
     }
     SECTION("DpDiagonal initialize values and dot product work as expected") {
         // test initialize values
@@ -132,9 +149,9 @@ TEST_CASE("Test DpDiagonal", "[DpTests]") {
         DpDiagonal<double, fiveState> d(3, -1, 1);
         d.InitValues(sM5.EndStateProbFcn());;
         double total_prob = LOG_ZERO;
-        for (int64_t s = 0; s < sM5.StateNumber(); s++) {
-            double c1 = d.CellGetter(-1, static_cast<HiddenState>(s));
-            double c2 = d.CellGetter(1, static_cast<HiddenState>(s));
+        for (int64_t s = 0; s < sM5.StateNumber(); s++) { // TODO change this to ints (enum)
+            double c1 = d.CellGetVal(-1, static_cast<HiddenState>(s));
+            double c2 = d.CellGetVal(1, static_cast<HiddenState>(s));
             REQUIRE(c1 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
             REQUIRE(c2 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
             total_prob = logAdd(total_prob, 2 * c1);
@@ -183,5 +200,3 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
         }
     }
 }
-
-

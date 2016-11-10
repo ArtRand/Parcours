@@ -4,7 +4,7 @@
 #define PARCOURS_DP_DIAGONAL_H
 
 #include "diagonal.h"
-#include "stateMachine.h"
+#include "common.h"
 #include "logAdd.h"
 
 template<class T, size_t sn>
@@ -20,7 +20,9 @@ public:
 
     bool CellCheck(int64_t xmy);
 
-    T CellGetter(int64_t xmy, HiddenState s);
+    T CellGetVal(int64_t xmy, HiddenState s);
+
+    T *CellGetter(int64_t xmy);
 
     void CellSetter(int64_t xmy, HiddenState s, T value);
     

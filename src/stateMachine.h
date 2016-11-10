@@ -1,25 +1,10 @@
-
 #ifndef PARCOURS_STATEMACHINE_H
 #define PARCOURS_STATEMACHINE_H
 
 #include "stl_includes.h"
+#include "common.h"
+#include "dpMatrix.h"
 #include "logAdd.h"
-
-typedef enum _hidden_state {
-    match = 0,
-    shortGapX = 1,
-    shortGapY = 2,
-    longGapX = 3,
-    longGapY = 4,
-} HiddenState;
-
-typedef enum _set_types { 
-    nucleotide = 4,
-} SetType;
-
-typedef enum _statemachine_type {
-    fiveState = 5,
-} StateMachineType;
 
 template<size_t set_size, size_t state_number>
 class StateMachine {
@@ -30,6 +15,12 @@ protected:
     
     virtual double EndStateProb(HiddenState state, bool ragged_end) = 0;
     
+    virtual double GapXProb(Symbol cX) = 0;
+
+    virtual double GapYProb(Symbol cY) = 0;
+
+    virtual double MatchProb(Symbol cX, Symbol cY) = 0;
+
     // TODO fill this in.. unless it's always overridden 
     //virtual void CellCalculate() = 0;
 
@@ -37,7 +28,7 @@ protected:
 
     //virtual constexpr StateMachineType Type() const = 0;
     
-    std::array<double, set_size> match_probs;
+    std::array<double, set_size * set_size > match_probs;
 
     std::array<double, set_size> x_gap_probs;
 
@@ -47,13 +38,19 @@ protected:
 };
 
 template<size_t set_size>
-class StateMachine5 : public StateMachine<set_size, 5> {
+class StateMachine5 : public StateMachine<set_size, fiveState> {
 public:
     StateMachine5<set_size>();
 
     double StartStateProb(HiddenState state, bool ragged_end);
     
     double EndStateProb(HiddenState state, bool ragged_end);
+
+    virtual double GapXProb(Symbol cX);
+
+    virtual double GapYProb(Symbol cY);
+
+    virtual double MatchProb(Symbol cX, Symbol cY);
 
     std::function<double(HiddenState state, bool ragged_end)> EndStateProbFcn();
     
@@ -63,7 +60,9 @@ public:
     
     StateMachineType type;
     //constexpr StateMachineType Type() const;
-    //void CellCalculate();
+    //void CellCalculate(bool lower, bool middle, bool upper, Symbol& cX, Symbol &cY, 
+    //                   DpMatrix<double, fiveState>& mat, 
+    //                   std::function<double(double, double&, double, double)> do_transition);
     
 private:
     // transitions

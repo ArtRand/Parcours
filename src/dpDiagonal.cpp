@@ -25,19 +25,26 @@ bool DpDiagonal<T, sn>::operator == (DpDiagonal& other) const {
 }
 
 template<class T, size_t sn>
-T DpDiagonal<T, sn>::CellGetter(int64_t xmy, HiddenState s) {
+T DpDiagonal<T, sn>::CellGetVal(int64_t xmy, HiddenState s) {
     if (xmy < diagonal.MinXmy() || xmy > diagonal.MaxXmy() || !active) {
         return std::numeric_limits<T>::quiet_NaN();
     }
 
     if ((diagonal.Xay() + xmy) % 2 != 0) {
-        throw ParcoursException("[DpDiagonal::CellGetter] Illegal request %" PRIi64 "\n", xmy);
+        throw ParcoursException("[DpDiagonal::CellGetVal] Illegal request %" PRIi64 "\n", xmy);
     }
-    
     //return cells.at((((xmy - diagonal.MinXmy()) / 2) * _state_number) + s);
     return cells.at(state_index(xmy, s));
 }
 
+template<class T, size_t sn>
+T *DpDiagonal<T, sn>::CellGetter(int64_t xmy) {
+    if (xmy < diagonal.MinXmy() || xmy > diagonal.MaxXmy() || !active) return nullptr;
+    if ((diagonal.Xay() + xmy) % 2 != 0) throw ParcoursException(
+            "[DpDiagonal::CellGetVal] Illegal request %" PRIi64 "\n", xmy);
+    // return 'match' index so that we're at the start of the cell
+    return &cells.at(state_index(xmy, match));
+}
 template<class T, size_t sn>
 void DpDiagonal<T, sn>::CellSetter(int64_t xmy, HiddenState s, T value) {
     if (!active) throw ParcoursException("[DpDiagonal::CellSetter] DpDiagonal not active\n");
@@ -68,10 +75,10 @@ T DpDiagonal<T, sn>::Dot(DpDiagonal& d2) {
     double total_prob = LOG_ZERO;
     int64_t xmy = diagonal.MinXmy();
     while (xmy <= diagonal.MaxXmy()) {
-        double p = CellGetter(xmy, match) + d2.CellGetter(xmy, match);
+        double p = CellGetVal(xmy, match) + d2.CellGetVal(xmy, match);
         for (int64_t s = 1; s < _state_number; s++) {
-            p = logAdd(p, (CellGetter(xmy, static_cast<HiddenState>(s)) 
-                           + d2.CellGetter(xmy, static_cast<HiddenState>(s))));
+            p = logAdd(p, (CellGetVal(xmy, static_cast<HiddenState>(s)) 
+                           + d2.CellGetVal(xmy, static_cast<HiddenState>(s))));
         }
         total_prob = logAdd(total_prob, p);
         xmy += 2;
@@ -100,6 +107,7 @@ void DpDiagonal<T, sn>::Activate() {
 
 template<class T, size_t sn>
 int64_t DpDiagonal<T, sn>::state_index(int64_t xmy, HiddenState s) {
+    if (s >= _state_number) throw ParcoursException("[DpDiagonal::state_index] illegal Hidden state %i", s);
     return (((xmy - diagonal.MinXmy()) / 2) * _state_number) + s;
 }
 

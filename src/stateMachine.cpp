@@ -8,24 +8,24 @@ StateMachine<set_size, state_number>::StateMachine() {  }
 // StateMachine5 
 template<size_t set_size>
 StateMachine5<set_size>::StateMachine5() { 
-    TRANSITION_MATCH_CONTINUE =         -0.030064059121770816; //0.9703833696510062f
-    TRANSITION_MATCH_FROM_SHORT_GAP_X = -1.272871422049609; //1.0 - gapExtend - gapSwitch = 0.280026392297485
-    TRANSITION_MATCH_FROM_LONG_GAP_X =  -5.673280173170473; //1.0 - gapExtend = 0.00343657420938
-    TRANSITION_GAP_SHORT_OPEN_X =       -4.34381910900448; //0.0129868352330243
-    TRANSITION_GAP_SHORT_EXTEND_X =     -0.3388262689231553; //0.7126062401851738f;
-    TRANSITION_GAP_SHORT_SWITCH_TO_X =  -4.910694825551255; //0.0073673675173412815f;
-    TRANSITION_GAP_LONG_OPEN_X =        -6.30810595366929; //(1.0 - match - 2*gapOpenShort)/2 = 0.001821479941473
-    TRANSITION_GAP_LONG_EXTEND_X =      -0.003442492794189331; //0.99656342579062f;
-    TRANSITION_GAP_LONG_SWITCH_TO_X =   -6.30810595366929; //0.99656342579062f;
+    TRANSITION_MATCH_CONTINUE          =-0.030064059121770816; //0.9703833696510062f
+    TRANSITION_MATCH_FROM_SHORT_GAP_X  =-1.272871422049609; //1.0 - gapExtend - gapSwitch = 0.280026392297485
+    TRANSITION_MATCH_FROM_LONG_GAP_X   =-5.673280173170473; //1.0 - gapExtend = 0.00343657420938
+    TRANSITION_GAP_SHORT_OPEN_X        =-4.34381910900448; //0.0129868352330243
+    TRANSITION_GAP_SHORT_EXTEND_X      =-0.3388262689231553; //0.7126062401851738f;
+    TRANSITION_GAP_SHORT_SWITCH_TO_X   =-4.910694825551255; //0.0073673675173412815f;
+    TRANSITION_GAP_LONG_OPEN_X         =-6.30810595366929; //(1.0 - match - 2*gapOpenShort)/2 = 0.001821479941473
+    TRANSITION_GAP_LONG_EXTEND_X       =-0.003442492794189331; //0.99656342579062f;
+    TRANSITION_GAP_LONG_SWITCH_TO_X    =-6.30810595366929; //0.99656342579062f;
     // make it symmetric
-    TRANSITION_MATCH_FROM_SHORT_GAP_Y = TRANSITION_MATCH_FROM_SHORT_GAP_X;
-    TRANSITION_MATCH_FROM_LONG_GAP_Y =  TRANSITION_MATCH_FROM_LONG_GAP_X;
-    TRANSITION_GAP_SHORT_OPEN_Y =       TRANSITION_GAP_SHORT_OPEN_X;
-    TRANSITION_GAP_SHORT_EXTEND_Y =     TRANSITION_GAP_SHORT_EXTEND_X;
-    TRANSITION_GAP_SHORT_SWITCH_TO_Y =  TRANSITION_GAP_SHORT_SWITCH_TO_X;
-    TRANSITION_GAP_LONG_OPEN_Y =        TRANSITION_GAP_LONG_OPEN_X;
-    TRANSITION_GAP_LONG_EXTEND_Y =      TRANSITION_GAP_LONG_EXTEND_X;
-    TRANSITION_GAP_LONG_SWITCH_TO_Y =   TRANSITION_GAP_LONG_SWITCH_TO_X;
+    TRANSITION_MATCH_FROM_SHORT_GAP_Y  =TRANSITION_MATCH_FROM_SHORT_GAP_X;
+    TRANSITION_MATCH_FROM_LONG_GAP_Y   =TRANSITION_MATCH_FROM_LONG_GAP_X;
+    TRANSITION_GAP_SHORT_OPEN_Y        =TRANSITION_GAP_SHORT_OPEN_X;
+    TRANSITION_GAP_SHORT_EXTEND_Y      =TRANSITION_GAP_SHORT_EXTEND_X;
+    TRANSITION_GAP_SHORT_SWITCH_TO_Y   =TRANSITION_GAP_SHORT_SWITCH_TO_X;
+    TRANSITION_GAP_LONG_OPEN_Y         =TRANSITION_GAP_LONG_OPEN_X;
+    TRANSITION_GAP_LONG_EXTEND_Y       =TRANSITION_GAP_LONG_EXTEND_X;
+    TRANSITION_GAP_LONG_SWITCH_TO_Y    =TRANSITION_GAP_LONG_SWITCH_TO_X;
 
     type = fiveState;
 }
@@ -107,5 +107,47 @@ std::function<double(HiddenState s, bool re)> StateMachine5<set_size>::StartStat
     return lambda;
 }
 
+template<size_t set_size>
+double StateMachine5<set_size>::GapXProb(Symbol cX) {
+    if (cX > set_size) throw ParcoursException("[StateMachine5::GapXProb] Illegal symbol %i", cX);
+    if (cX == n) return -1.386294361;  // log(0.25)
+    return StateMachine<set_size, fiveState>::x_gap_probs.at(cX);
+}
+
+template<size_t set_size>
+double StateMachine5<set_size>::GapYProb(Symbol cY) {
+    if (cY > set_size) throw ParcoursException("[StateMachine5::GapYProb] Illegal symbol %i", cY);
+    if (cY == n) return -1.386294361;  // log(0.25)
+    return StateMachine<set_size, fiveState>::y_gap_probs.at(cY);
+}
+
+template<size_t set_size>
+double StateMachine5<set_size>::MatchProb(Symbol cX, Symbol cY) {
+    if (cX > set_size) throw ParcoursException("[StateMachine5::MatchProb] Illegal cX symbol %i", cX);
+    if (cY > set_size) throw ParcoursException("[StateMachine5::MatchProb] Illegal cY symbol %i", cY);
+    if (cX == n || cY == n) return -2.772588722; // log(0.25**2)
+    return StateMachine<set_size, fiveState>::match_probs.at(cX * set_size + cY);
+}
+
+/*
+template<size_t set_size>
+void StateMachine5<set_size>::CellCalculate(
+        bool lower, bool middle, bool upper, Symbol& cX, Symbol &cY, // make these sequence objs instead?
+        DpMatrix<double, fiveState>& mat, 
+        std::function<void(double, double&, double, double)> do_transition) {
+    if (lower) {
+        double eP = GapXProb(cX);
+        
+    }
+
+    if (middle) {
+
+    }
+
+    if (upper) {
+
+    }
+}
+*/
 template class StateMachine5<4>;
 template class StateMachine<4, 5>;
