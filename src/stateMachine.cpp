@@ -36,8 +36,12 @@ const int64_t StateMachine5<set_size>::StateNumber() const {
     return 5;
 }
 
-//template<size_t set_size>
-//constexpr StateMachineType StateMachine5<set_size>::Type() const { return fiveState; }
+template<size_t set_size>
+void StateMachine5<set_size>::InitializeEmissions(EmissionsInitFunction<set_size> initFunc) {
+    initFunc(StateMachine<set_size, fiveState>::match_probs, 
+             StateMachine<set_size, fiveState>::x_gap_probs, 
+             StateMachine<set_size, fiveState>::y_gap_probs);
+}
 
 template<size_t set_size>
 double StateMachine5<set_size>::StartStateProb(HiddenState state, bool ragged_end) {
@@ -129,25 +133,79 @@ double StateMachine5<set_size>::MatchProb(Symbol cX, Symbol cY) {
     return StateMachine<set_size, fiveState>::match_probs.at(cX * set_size + cY);
 }
 
-/*
 template<size_t set_size>
-void StateMachine5<set_size>::CellCalculate(
-        bool lower, bool middle, bool upper, Symbol& cX, Symbol &cY, // make these sequence objs instead?
-        DpMatrix<double, fiveState>& mat, 
-        std::function<void(double, double&, double, double)> do_transition) {
-    if (lower) {
+void StateMachine5<set_size>::CellCalculate(double *current, double *lower, double *middle, double *upper,
+                                            const Symbol& cX, const Symbol& cY,
+                                            TransitionFunction do_transition) {
+    if (lower != nullptr) {
         double eP = GapXProb(cX);
-        
+        do_transition(lower, current, match, shortGapX, eP, TRANSITION_GAP_SHORT_OPEN_X);
+        do_transition(lower, current, shortGapX, shortGapX, eP, TRANSITION_GAP_SHORT_EXTEND_X);
+        do_transition(lower, current, match, longGapX, eP, TRANSITION_GAP_LONG_OPEN_X);
+        do_transition(lower, current, longGapX, longGapX, eP, TRANSITION_GAP_LONG_EXTEND_X);
     }
 
-    if (middle) {
-
+    if (middle != nullptr) {
+        double eP = MatchProb(cX, cY);
+        do_transition(middle, current, match, match, eP, TRANSITION_MATCH_CONTINUE);
+        do_transition(middle, current, shortGapX, match, eP, TRANSITION_MATCH_FROM_SHORT_GAP_X);
+        do_transition(middle, current, shortGapY, match, eP, TRANSITION_MATCH_FROM_SHORT_GAP_Y);
+        do_transition(middle, current, longGapX, match, eP, TRANSITION_MATCH_FROM_LONG_GAP_X);
+        do_transition(middle, current, longGapY, match, eP, TRANSITION_MATCH_FROM_LONG_GAP_Y);
     }
 
-    if (upper) {
-
+    if (upper != nullptr) {
+        double eP = GapYProb(cY);
+        do_transition(upper, current, match, shortGapY, eP, TRANSITION_GAP_SHORT_OPEN_Y);
+        do_transition(upper, current, shortGapY, shortGapY, eP, TRANSITION_GAP_SHORT_EXTEND_Y);
+        do_transition(upper, current, match, longGapY, eP, TRANSITION_GAP_LONG_OPEN_Y);
+        do_transition(upper, current, longGapY, longGapY, eP, TRANSITION_GAP_LONG_EXTEND_Y);
     }
 }
-*/
-template class StateMachine5<4>;
-template class StateMachine<4, 5>;
+
+void DoTransitionForward::operator () (double *from_cells, double *to_cells, 
+                                       HiddenState from, HiddenState to, 
+                                       double eP, double tP) {
+    to_cells[to] = logAdd(to_cells[to], from_cells[from] + (eP + tP));
+}
+
+void DoTransitionBackward::operator () (double *from_cells, double *to_cells, 
+                                        HiddenState from, HiddenState to, 
+                                        double eP, double tP) {
+    from_cells[from] = logAdd(from_cells[from], to_cells[to] + (eP + tP));
+}
+
+EmissionsInitFunction<nucleotide> SetNucleotideEmissionsToDefauts() {
+    std::function<void(std::array<double, nucleotide * nucleotide>&, 
+                       std::array<double, nucleotide>&,
+                       std::array<double, nucleotide>&)> lambda = 
+        [&] (std::array<double, nucleotide * nucleotide>& matchprobs,
+        std::array<double, nucleotide>& xgapprobs,
+        std::array<double, nucleotide>& ygapprobs) -> void {
+            // Set Match probs to default values
+            double EMISSION_MATCH=-2.1149196655034745; //log(0.12064298095701059);
+            double EMISSION_TRANSVERSION=-4.5691014376830479; //log(0.010367271172731285);
+            double EMISSION_TRANSITION=-3.9833860032220842; //log(0.01862247669752685);
+
+            std::array<double, nucleotide * nucleotide> M = { 
+                {EMISSION_MATCH, EMISSION_TRANSVERSION, EMISSION_TRANSITION, EMISSION_TRANSVERSION,
+                EMISSION_TRANSVERSION, EMISSION_MATCH, EMISSION_TRANSVERSION, EMISSION_TRANSITION,
+                EMISSION_TRANSITION, EMISSION_TRANSVERSION, EMISSION_MATCH, EMISSION_TRANSVERSION,
+                EMISSION_TRANSVERSION, EMISSION_TRANSITION, EMISSION_TRANSVERSION, EMISSION_MATCH}
+            };
+            matchprobs = M;
+
+            // Set Gap probs to default values
+            double EMISSION_GAP = -1.6094379124341003; //log(0.2)
+            std::array<double, nucleotide> G = { {EMISSION_GAP, EMISSION_GAP, EMISSION_GAP, EMISSION_GAP} };
+            xgapprobs = G;
+            ygapprobs = G;
+        };  
+    return lambda;
+}
+
+
+
+template class StateMachine5<nucleotide>;
+template class StateMachine<nucleotide, fiveState>;
+

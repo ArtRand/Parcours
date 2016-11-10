@@ -6,6 +6,13 @@
 #include "dpMatrix.h"
 #include "logAdd.h"
 
+typedef std::function<void(double *, double *, HiddenState, HiddenState, double, double)> TransitionFunction;
+
+template<size_t set_size>
+using EmissionsInitFunction = std::function<void(std::array<double, set_size * set_size>& matchprobs,
+                                                std::array<double, set_size>& xgapprobs,
+                                                std::array<double, set_size>& ygapprobs)>;
+
 template<size_t set_size, size_t state_number>
 class StateMachine {
 protected:
@@ -26,8 +33,8 @@ protected:
 
     virtual const int64_t StateNumber() const = 0;
 
-    //virtual constexpr StateMachineType Type() const = 0;
-    
+    virtual void InitializeEmissions(EmissionsInitFunction<set_size>) = 0;
+
     std::array<double, set_size * set_size > match_probs;
 
     std::array<double, set_size> x_gap_probs;
@@ -35,6 +42,8 @@ protected:
     std::array<double, set_size> y_gap_probs;
 
     int64_t _state_number = state_number;
+
+    int64_t _set_size = set_size;
 };
 
 template<size_t set_size>
@@ -46,23 +55,27 @@ public:
     
     double EndStateProb(HiddenState state, bool ragged_end);
 
-    virtual double GapXProb(Symbol cX);
+    double GapXProb(Symbol cX);
 
-    virtual double GapYProb(Symbol cY);
+    double GapYProb(Symbol cY);
 
-    virtual double MatchProb(Symbol cX, Symbol cY);
+    double MatchProb(Symbol cX, Symbol cY);
 
     std::function<double(HiddenState state, bool ragged_end)> EndStateProbFcn();
     
     std::function<double(HiddenState state, bool ragged_end)> StartStateProbFcn();
 
     const int64_t StateNumber() const;
-    
+
+    void InitializeEmissions(EmissionsInitFunction<set_size> initFunc);
+
+    const int64_t SetSize() const;
+
     StateMachineType type;
     //constexpr StateMachineType Type() const;
-    //void CellCalculate(bool lower, bool middle, bool upper, Symbol& cX, Symbol &cY, 
-    //                   DpMatrix<double, fiveState>& mat, 
-    //                   std::function<double(double, double&, double, double)> do_transition);
+    void CellCalculate(double *current, double *lower, double *middle, double *upper,
+                       const Symbol& cX, const Symbol& cY,
+                       TransitionFunction do_transition);
     
 private:
     // transitions
@@ -85,5 +98,18 @@ private:
     double TRANSITION_GAP_LONG_SWITCH_TO_Y; //0.0073673675173412815f;
 };
 
+struct DoTransitionForward {
+    void operator ()(double *from_cells, double *to_cells, 
+                     HiddenState from, HiddenState to, 
+                     double eP, double tP);
+};
+
+struct DoTransitionBackward {  
+    void operator ()(double *from_cells, double *to_cells, 
+                     HiddenState from, HiddenState to, 
+                     double eP, double tP);
+};
+
+EmissionsInitFunction<nucleotide> SetNucleotideEmissionsToDefauts();
 
 #endif

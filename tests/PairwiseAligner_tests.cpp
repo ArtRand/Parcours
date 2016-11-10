@@ -95,9 +95,47 @@ TEST_CASE("LogAdd Tests", "[NumericTests]") {
 
 TEST_CASE("Test Cell", "[DpTests]") {
     StateMachine5<nucleotide> sM5;
-    REQUIRE(sM5.StateNumber() == 5);
-
+    REQUIRE(sM5.StateNumber() == fiveState);
+    sM5.InitializeEmissions(SetNucleotideEmissionsToDefauts());
+    double lowerF[sM5.StateNumber()], middleF[sM5.StateNumber()], upperF[sM5.StateNumber()], currentF[sM5.StateNumber()];
+    double lowerB[sM5.StateNumber()], middleB[sM5.StateNumber()], upperB[sM5.StateNumber()], currentB[sM5.StateNumber()];
     
+    for (int64_t i = 0; i < sM5.StateNumber(); i++) {
+        middleF[i] = sM5.StartStateProb(static_cast<HiddenState>(i), false);
+        middleB[i] = LOG_ZERO;
+        lowerF[i] = LOG_ZERO;
+        lowerB[i] = LOG_ZERO;
+        upperF[i] = LOG_ZERO;
+        upperB[i] = LOG_ZERO;
+        currentF[i] = LOG_ZERO;
+        currentB[i] = sM5.EndStateProb(static_cast<HiddenState>(i), false);
+    }
+    
+    Symbol x = a;
+    Symbol y = a;
+
+    auto dot_prd = [&sM5] (double *cell, std::function<double(HiddenState s, bool re)> fc) -> double {
+        double total_prob = cell[0] + fc(match, false);
+        for (size_t s = 1; s < sM5.StateNumber(); s++) {
+            total_prob = logAdd(total_prob, cell[s] + fc(static_cast<HiddenState>(s), false));
+        }
+        return total_prob;
+    };
+
+    // Do forward
+    sM5.CellCalculate(lowerF, nullptr, nullptr, middleF, x, y, DoTransitionForward());
+    sM5.CellCalculate(upperF, middleF, nullptr, nullptr, x, y, DoTransitionForward());
+    sM5.CellCalculate(currentF, lowerF, middleF, upperF, x, y, DoTransitionForward());
+    
+    // Do backward
+    sM5.CellCalculate(currentB, lowerB, middleB, upperB, x, y, DoTransitionBackward());
+    sM5.CellCalculate(upperB, middleB, nullptr, nullptr, x, y, DoTransitionBackward());
+    sM5.CellCalculate(lowerB, nullptr, nullptr, middleB, x, y, DoTransitionBackward());
+
+    double total_prob_forward = dot_prd(currentF, sM5.EndStateProbFcn());
+    double total_prob_backward = dot_prd(middleB, sM5.StartStateProbFcn());
+    st_uglyf("total forward prob : %f total backward prob : %f\n", total_prob_forward, total_prob_backward);
+    REQUIRE(std::abs(total_prob_forward - total_prob_backward) < 0.00001);
 }
 
 TEST_CASE("Test DpDiagonal", "[DpTests]") {
