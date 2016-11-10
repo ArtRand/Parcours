@@ -238,3 +238,17 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
         }
     }
 }
+
+TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
+    std::vector<Symbol> sX = {{a, g, c, g}};
+    std::vector<Symbol> sY = {{a, g, t, t, c, g}};
+    
+    int64_t lX = sX.size();
+    int64_t lY = sY.size();
+
+    StateMachine5<nucleotide> sM5;
+    sM5.InitializeEmissions(SetNucleotideEmissionsToDefauts());
+    
+    DpMatrix<double, fiveState> forward_matrix(lX + lY);
+    
+}

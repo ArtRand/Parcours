@@ -3,7 +3,7 @@
 #ifndef PARCOURS_BAND_H
 #define PARCOURS_BAND_H
 
-#include "dpDiagonal.h"
+#include "diagonal.h"
 #include "stl_includes.h"
 
 template<class T, size_t sn>
@@ -23,7 +23,7 @@ public:
 
 private:
     // used a vector instead of a list here bc. random access is faster
-    std::vector<DpDiagonal<T, sn>> diagonals;  
+    std::vector<Diagonal> diagonals;  
     int64_t maxLxLy;  // lXalY
     int64_t index;
 };

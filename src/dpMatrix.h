@@ -10,6 +10,8 @@ public:
 
     DpDiagonal<T, sn>& DpDiagonalGetter(int64_t xay);
 
+    //void Init(Band<T, sn> band):
+
     int64_t ActiveDiagonals();
 
     bool DiagonalCheck(int64_t xay);

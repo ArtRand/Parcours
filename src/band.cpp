@@ -46,7 +46,7 @@ Band<T, sn>::Band(std::vector<std::pair<int64_t, int64_t>> anchors,
         xmyR = set_boundary(xmyR, xU, diagonal_XCoordinate(XaY, xmyR), -1);
         xmyR = set_boundary(xmyR, diagonal_YCoordinate(XaY, xmyR), yU, -1);
         
-        DpDiagonal<T, sn> d(XaY, xmyL, xmyR);
+        Diagonal d(XaY, xmyL, xmyR);
         diagonals.insert(begin(diagonals) + XaY, d);
     };
     
@@ -93,13 +93,13 @@ template<class T, size_t sn>
 Diagonal Band<T, sn>::Next() {
     int64_t idx_check = index > maxLxLy ? maxLxLy : index;
     if (index <= maxLxLy) index++;
-    return diagonals.at(idx_check).DiagonalGetter();
+    return diagonals.at(idx_check);
 }
 
 template<class T, size_t sn>
 Diagonal Band<T, sn>::Previous() {
     if (index > 0) index--;
-    return diagonals.at(index).DiagonalGetter();
+    return diagonals.at(index);
 }
 
-template class Band<double, 5>;
+template class Band<double, fiveState>;

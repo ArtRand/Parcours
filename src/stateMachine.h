@@ -99,15 +99,15 @@ private:
 };
 
 struct DoTransitionForward {
-    void operator ()(double *from_cells, double *to_cells, 
-                     HiddenState from, HiddenState to, 
-                     double eP, double tP);
+    void operator () (double *from_cells, double *to_cells, 
+                      HiddenState from, HiddenState to, 
+                      double eP, double tP);
 };
 
 struct DoTransitionBackward {  
-    void operator ()(double *from_cells, double *to_cells, 
-                     HiddenState from, HiddenState to, 
-                     double eP, double tP);
+    void operator () (double *from_cells, double *to_cells, 
+                      HiddenState from, HiddenState to, 
+                      double eP, double tP);
 };
 
 EmissionsInitFunction<nucleotide> SetNucleotideEmissionsToDefauts();
