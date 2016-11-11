@@ -36,7 +36,7 @@ StateMachine5<set_size>::StateMachine5() {
 }
 
 template<size_t set_size>
-const int64_t StateMachine5<set_size>::StateNumber() const { return fiveState; }
+int64_t StateMachine5<set_size>::StateNumber() const { return fiveState; }
 
 template<size_t set_size>
 std::array<HiddenState, fiveState> StateMachine5<set_size>::States() const { 

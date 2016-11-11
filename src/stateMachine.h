@@ -43,7 +43,7 @@ protected:
 
     // TODO also add DpDiagonalCalculation interfaces?
 
-    virtual const int64_t StateNumber() const = 0;
+    virtual int64_t StateNumber() const = 0;
 
     virtual std::array<HiddenState, state_number> States() const = 0;
 
@@ -84,7 +84,7 @@ public:
     
     std::function<double(HiddenState state, bool ragged_end)> StartStateProbFcn();
 
-    const int64_t StateNumber() const;
+    int64_t StateNumber() const;
 
     std::array<HiddenState, fiveState> States() const;
 
