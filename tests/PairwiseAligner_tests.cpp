@@ -218,7 +218,8 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
         
         // check for 'fantom' diagonals
         for (int64_t i = -1; i <= lX + lY + 10; i++) {
-            REQUIRE_THROWS_AS(mat.DpDiagonalGetter(i), ParcoursException);
+            //REQUIRE_THROWS_AS(mat.DpDiagonalGetter(i), ParcoursException);
+            REQUIRE(mat.DpDiagonalGetter(i) == nullptr);
         }
 
         // make some diagonals in the dpMatrix, and check them, then make sure that
@@ -226,14 +227,14 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
         for (int64_t i = 0; i <= lX + lY; i++) {
             mat.CreateDpDiagonal(i, -i, i);
             DpDiagonal<double, fiveState> d(i, -i, i);
-            REQUIRE(mat.DpDiagonalGetter(i) == d);
+            REQUIRE(*mat.DpDiagonalGetter(i) == d);
             REQUIRE(mat.ActiveDiagonals() == i + 1);
         }
 
         // delete the diagonals
         for (int64_t i = lX + lY; i >= 0; i--) {
             mat.DeleteDpDiagonal(i);
-            REQUIRE(!mat.DpDiagonalGetter(i).IsActive());
+            REQUIRE(!mat.DpDiagonalGetter(i)->IsActive());
             REQUIRE(mat.ActiveDiagonals() == i);
         }
     }
@@ -249,6 +250,24 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     StateMachine5<nucleotide> sM5;
     sM5.InitializeEmissions(SetNucleotideEmissionsToDefauts());
     
-    DpMatrix<double, fiveState> forward_matrix(lX + lY);
+    // TODO make this into an init function for DpMatrix
+    DpMatrix<double, fiveState> forward_mat(lX + lY);
+    DpMatrix<double, fiveState> backward_mat(lX + lY);
     
+    AnchorPairs anchors;
+    
+    int64_t expansion = 2; 
+    Band<double, fiveState> band(anchors, lX, lY, expansion);
+    
+    REQUIRE(forward_mat.DiagonalNumber() == backward_mat.DiagonalNumber());
+
+    for (int64_t i = 0; i <= forward_mat.DiagonalNumber(); i++) {
+        Diagonal d = band.Next();
+        st_uglyf("Making diagonal %s\n", d.ToString().c_str());
+        forward_mat.AddDiagonal(d);
+        backward_mat.AddDiagonal(d);
+    }
+    forward_mat.DpDiagonalGetter(0)->InitValues(sM5.StartStateProbFcn());
+    backward_mat.DpDiagonalGetter(backward_mat.DiagonalNumber())->InitValues(sM5.EndStateProbFcn());
+
 }

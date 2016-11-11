@@ -31,7 +31,7 @@ typedef enum {
     n=4,
 } Symbol;
 
-
+typedef std::vector<std::pair<int64_t, int64_t>> AnchorPairs;
 
 void st_uglyf(const char *string, ...);
 

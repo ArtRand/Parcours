@@ -6,9 +6,9 @@
 template<class T, size_t sn>
 class DpMatrix {
 public:
-    DpMatrix(int64_t);
+    DpMatrix(int64_t dn);
 
-    DpDiagonal<T, sn>& DpDiagonalGetter(int64_t xay);
+    DpDiagonal<T, sn> *DpDiagonalGetter(int64_t xay);
 
     //void Init(Band<T, sn> band):
 
@@ -17,6 +17,8 @@ public:
     bool DiagonalCheck(int64_t xay);
 
     void CreateDpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR);
+
+    void AddDiagonal(Diagonal d);
 
     void DeleteDpDiagonal(int64_t xay);
     

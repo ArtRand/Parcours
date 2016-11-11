@@ -22,6 +22,8 @@ public:
     int64_t MaxXmy();
 
     int64_t Width();
+
+    std::string ToString();
     
     bool operator == (Diagonal& other) const;
 

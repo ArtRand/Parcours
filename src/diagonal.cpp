@@ -20,6 +20,14 @@ int64_t Diagonal::MaxXmy() { return xmyR; }
 
 int64_t Diagonal::Width() { return (xmyR - xmyL) / 2 + 1; }
 
+std::string Diagonal::ToString() {
+    char buff[100];
+    std::sprintf(buff, "Diagonal, xay: %" PRIi64 " xmyL %" PRIi64 ", xmyR: %" PRIi64 "", 
+                 Xay(), MinXmy(), MaxXmy());
+    std::string s(buff);
+    return s;
+}
+
 bool Diagonal::operator == (Diagonal& other) const {
     return xay == other.xay && xmyL == other.xmyL && xmyR == other.xmyR;
 }

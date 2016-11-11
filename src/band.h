@@ -4,12 +4,13 @@
 #define PARCOURS_BAND_H
 
 #include "diagonal.h"
+#include "common.h"
 #include "stl_includes.h"
 
 template<class T, size_t sn>
 class Band {
 public:
-    Band(std::vector<std::pair<int64_t, int64_t>> anchors, int64_t lX, int64_t lY, int64_t expansion);
+    Band(AnchorPairs anchors, int64_t lX, int64_t lY, int64_t expansion);
 
     ~Band() {};
 
