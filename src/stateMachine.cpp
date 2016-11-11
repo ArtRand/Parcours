@@ -29,10 +29,19 @@ StateMachine5<set_size>::StateMachine5() {
     TRANSITION_GAP_LONG_SWITCH_TO_Y    =TRANSITION_GAP_LONG_SWITCH_TO_X;
 
     type = fiveState;
+    
+    std::array<HiddenState, fiveState> states = {{match, shortGapX, shortGapY, longGapX, longGapY}};
+
+    StateMachine<set_size, fiveState>::_states = states;
 }
 
 template<size_t set_size>
 const int64_t StateMachine5<set_size>::StateNumber() const { return fiveState; }
+
+template<size_t set_size>
+std::array<HiddenState, fiveState> StateMachine5<set_size>::States() const { 
+    return StateMachine<set_size, fiveState>::_states;  
+}
 
 // Used to initialize emsissions matrices. The compiler should check for the correct size 
 // of the input to `initFunc`, i.e. it should check that you're handing a `nucleotide` 
@@ -181,7 +190,7 @@ void StateMachine5<set_size>::DpDiagonalCalculation(DpDiagonal<double, fiveState
     auto get_position = [] (const SymbolString& S, int64_t XaY, int64_t XmY, 
                               int64_t (*coord_func)(int64_t, int64_t)) -> int64_t {
         int64_t x = coord_func(XaY, XmY);
-        if (x < 0 || x > S.size()) throw ParcoursException(
+        if (x < 0 || x > static_cast<int64_t>(S.size())) throw ParcoursException(
                 "[StateMachine5::DpDiagonalCalculation] Illegal coordinate %" PRIi64 "\n", x);
         return x;
     };

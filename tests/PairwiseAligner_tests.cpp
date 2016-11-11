@@ -116,7 +116,7 @@ TEST_CASE("Test Cell", "[DpTests]") {
 
     auto dot_prd = [&sM5] (double *cell, std::function<double(HiddenState s, bool re)> fc) -> double {
         double total_prob = cell[0] + fc(match, false);
-        for (size_t s = 1; s < sM5.StateNumber(); s++) {
+        for (int64_t s = 1; s < sM5.StateNumber(); s++) {
             total_prob = logAdd(total_prob, cell[s] + fc(static_cast<HiddenState>(s), false));
         }
         return total_prob;

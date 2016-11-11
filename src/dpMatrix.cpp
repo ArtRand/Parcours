@@ -3,25 +3,21 @@
 template<class T, size_t sn>
 DpMatrix<T, sn>::DpMatrix(int64_t lx, int64_t ly): diagonal_number(lx + ly), 
                                                    active_diagonals(0), 
-                                                   lX(lx), lY(ly)
-{
-    // nada
+                                                   lX(lx), lY(ly) {
+    dpDiagonals.reserve(lx + ly);
 }
 
 template<class T, size_t sn>
 DpDiagonal<T, sn> *DpMatrix<T, sn>::DpDiagonalGetter(int64_t xay) {
     if (!DiagonalCheck(xay)) {
-        //throw ParcoursException("[DpMatrix::DpDiagonalGetter] No Diagonal at %" PRIi64 "\n", xay);
-        //st_uglyf("SENTINAL: no dp diagonal at %lld returning null\n", xay);
         return nullptr;
     }
-    //st_uglyf("SENTINAL: getting dp diagonal at %lld\n", xay);
     return &dpDiagonals.at(xay);
 }
 
 template<class T, size_t sn>
 bool DpMatrix<T, sn>::DiagonalCheck(int64_t xay) {
-    if (xay < 0 || xay > diagonal_number || xay >= dpDiagonals.size()) {
+    if (xay < 0 || xay > diagonal_number || xay >= static_cast<int>(dpDiagonals.size())) {
         return false;
     } 
     return true;
@@ -30,11 +26,11 @@ bool DpMatrix<T, sn>::DiagonalCheck(int64_t xay) {
 template<class T, size_t sn>
 void DpMatrix<T, sn>::CreateDpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR) {
     if (xay < 0) throw ParcoursException(
-            "[DpMatrix::CreateDpDiagonal] Invalid xay > 0\n");
+            "[DpMatrix::CreateDpDiagonal] Invalid, xay < 0\n");
     if (xay > diagonal_number) throw ParcoursException(
-            "[DpMatrix::CreateDpDiagonal] Invalid xay > diagonal_number");
-    if (xay > dpDiagonals.size()) throw ParcoursException(
-            "[DpMatrix::CreateDpDiagonal] Invalid xay > len(dpDiagonals)");
+            "[DpMatrix::CreateDpDiagonal] Invalid, xay > diagonal_number");
+    if (xay > static_cast<int>(dpDiagonals.size())) throw ParcoursException(
+            "[DpMatrix::CreateDpDiagonal] Invalid, xay > len(dpDiagonals)");
     DpDiagonal<T, sn> d(xay, xmyL, xmyR);
     dpDiagonals.insert(begin(dpDiagonals) + xay, d);
     active_diagonals++;
@@ -62,7 +58,7 @@ T DpMatrix<T, sn>::TotalProbability(std::function<double(HiddenState s, bool re)
                                     bool forward) {
     auto dot_prod = [this] (double *cell, std::function<double(HiddenState s, bool re)> fc) -> double {
         double total_prob = cell[0] + fc(match, false);
-        for (size_t s = 1; s < _state_number; s++) {
+        for (int64_t s = 1; s < _state_number; s++) {
             total_prob = logAdd(total_prob, cell[s] + fc(static_cast<HiddenState>(s), false));
         }
         return total_prob;

@@ -45,6 +45,8 @@ protected:
 
     virtual const int64_t StateNumber() const = 0;
 
+    virtual std::array<HiddenState, state_number> States() const = 0;
+
     // initializes emissions for matches and gaps to defaults based on the 
     // type of alignment
     virtual void InitializeEmissions(EmissionsInitFunction<set_size>) = 0;
@@ -54,6 +56,8 @@ protected:
     std::array<double, set_size> x_gap_probs;
 
     std::array<double, set_size> y_gap_probs;
+
+    std::array<HiddenState, state_number> _states;
 
     int64_t _state_number = state_number;
 
@@ -82,9 +86,9 @@ public:
 
     const int64_t StateNumber() const;
 
-    void InitializeEmissions(EmissionsInitFunction<set_size> initFunc);
+    std::array<HiddenState, fiveState> States() const;
 
-    const int64_t SetSize() const;
+    void InitializeEmissions(EmissionsInitFunction<set_size> initFunc);
 
     // Basic dynamic programming function between cells of the DP matrix
     // depending on `do_transition` the function either performs a forward 
