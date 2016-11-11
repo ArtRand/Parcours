@@ -8,6 +8,7 @@
 #include "common.h"
 #include "dpMatrix.h"
 #include "stateMachine.h"
+#include "pairwise_aligner.h"
 #include "test_helpers.h"
 
 TEST_CASE("Diagonal Tests", "[PairwiseAligner]") {
@@ -261,6 +262,7 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     Band<double, fiveState> band(anchors, lX, lY, expansion);
     
     REQUIRE(forward_mat.DiagonalNumber() == backward_mat.DiagonalNumber());
+    REQUIRE(forward_mat.DiagonalNumber() == lX + lY);
 
     for (int64_t i = 0; i <= forward_mat.DiagonalNumber(); i++) {
         Diagonal d = band.Next();
@@ -285,4 +287,32 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     //st_uglyf("total forward p :%f total backward p: %f\n", total_forward_prob, total_backward_prob);
     REQUIRE(std::abs(total_forward_prob - total_backward_prob) < 0.001);
 
+    AlignedPairs aligned_pairs;
+    REQUIRE(aligned_pairs.size() == 0);
+    double threshold = 0.2;
+    for (int64_t i = 1; i <= forward_mat.DiagonalNumber(); i++) {
+        PosteriorMatchProbabilities(i, total_forward_prob, 
+                                    threshold, match, 
+                                    forward_mat, backward_mat, 
+                                    aligned_pairs);
+    }
+    REQUIRE(aligned_pairs.size() == 4);
+    
+    // extracts just the aligned pair coordinates, leaves the posteriors
+    auto pairs_no_probs = [&aligned_pairs] () -> AnchorPairs {
+        AnchorPairs pairs;
+        for (auto p : aligned_pairs) {
+            pairs.emplace_back(std::get<1>(p), std::get<2>(p));
+        }
+        return pairs;
+    }();
+    // make sure that worked
+    REQUIRE(pairs_no_probs.size() == 4);
+
+    AnchorPairs correct_pairs;
+    correct_pairs.emplace_back(0, 0);
+    correct_pairs.emplace_back(1, 1);
+    correct_pairs.emplace_back(2, 4);
+    correct_pairs.emplace_back(3, 5);
+    REQUIRE(correct_pairs == pairs_no_probs);
 }

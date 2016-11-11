@@ -32,6 +32,7 @@ typedef enum {
 } Symbol;
 
 typedef std::vector<std::pair<int64_t, int64_t>> AnchorPairs;
+typedef std::vector<std::tuple<double, int64_t, int64_t>> AlignedPairs;
 
 typedef std::vector<Symbol> SymbolString;
 

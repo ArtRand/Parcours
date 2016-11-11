@@ -21,4 +21,5 @@
 #include <limits>
 #include <cmath>
 #include <array>
+#include <tuple>
 #endif //PARCOURS_STL_INCLUDES_H
