@@ -134,7 +134,7 @@ TEST_CASE("Test Cell", "[DpTests]") {
 
     double total_prob_forward = dot_prd(currentF, sM5.EndStateProbFcn());
     double total_prob_backward = dot_prd(middleB, sM5.StartStateProbFcn());
-    st_uglyf("total forward prob : %f total backward prob : %f\n", total_prob_forward, total_prob_backward);
+    //st_uglyf("total forward prob : %f total backward prob : %f\n", total_prob_forward, total_prob_backward);
     REQUIRE(std::abs(total_prob_forward - total_prob_backward) < 0.00001);
 }
 
@@ -284,4 +284,5 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     double total_backward_prob = backward_mat.TotalProbability(sM5.StartStateProbFcn(), false);
     //st_uglyf("total forward p :%f total backward p: %f\n", total_forward_prob, total_backward_prob);
     REQUIRE(std::abs(total_forward_prob - total_backward_prob) < 0.001);
+
 }

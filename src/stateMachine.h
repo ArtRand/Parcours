@@ -7,13 +7,18 @@
 #include "dpDiagonal.h"
 #include "logAdd.h"
 
-typedef std::function<void(double *, double *, HiddenState, HiddenState, double, double)> TransitionFunction;
+// TransitionFunction, is used to designate forward or backward calculations 
+ typedef std::function<void(double *, double *, HiddenState, HiddenState, double, double)> TransitionFunction;
 
+// EmissionsInitFunction, a wrapper around functions used to initialize the 
+// emissions/transitions matrices of the state machine
 template<size_t set_size>
 using EmissionsInitFunction = std::function<void(std::array<double, set_size * set_size>& matchprobs,
-                                                std::array<double, set_size>& xgapprobs,
-                                                std::array<double, set_size>& ygapprobs)>;
+                                                 std::array<double, set_size>& xgapprobs,
+                                                 std::array<double, set_size>& ygapprobs)>;
 
+// StateMachine interface for all other StateMachine models. The interface contains a 
+// lot of the documentation for the child classes, a StateMachine is an abstraction on an HMM
 template<size_t set_size, size_t state_number>
 class StateMachine {
 protected:
@@ -23,6 +28,10 @@ protected:
     
     virtual double EndStateProb(HiddenState state, bool ragged_end) = 0;
     
+    // Gap/Match probability functions, return the probability of matching 
+    // an element of a sequence to a gap or to another element. These 
+    // functions can be overridden to use other datatypes, e.g. continuous 
+    // data or amino acids.
     virtual double GapXProb(Symbol cX) = 0;
 
     virtual double GapYProb(Symbol cY) = 0;
@@ -32,8 +41,12 @@ protected:
     // TODO fill this in.. unless it's always overridden 
     //virtual void CellCalculate() = 0;
 
+    // TODO also add DpDiagonalCalculation interfaces?
+
     virtual const int64_t StateNumber() const = 0;
 
+    // initializes emissions for matches and gaps to defaults based on the 
+    // type of alignment
     virtual void InitializeEmissions(EmissionsInitFunction<set_size>) = 0;
 
     std::array<double, set_size * set_size > match_probs;
@@ -62,6 +75,7 @@ public:
 
     double MatchProb(Symbol cX, Symbol cY);
 
+    // returns a function wrappter around EndStateProb/StartStateProb
     std::function<double(HiddenState state, bool ragged_end)> EndStateProbFcn();
     
     std::function<double(HiddenState state, bool ragged_end)> StartStateProbFcn();
@@ -72,10 +86,17 @@ public:
 
     const int64_t SetSize() const;
 
+    // Basic dynamic programming function between cells of the DP matrix
+    // depending on `do_transition` the function either performs a forward 
+    // or backward calculation, this is taken advantage of in the 
+    // following two functions.
     void CellCalculate(double *current, double *lower, double *middle, double *upper,
                        const Symbol& cX, const Symbol& cY,
                        TransitionFunction do_transition);
 
+    // Performs dynamic programming on `diagonals`, in other words performs the
+    // DP on an entire anti-diagonal of the DP matrix at a given `xay` (for the
+    // overloaded version). The `do_transition` parameter is given to `CellCalculate`
     void DpDiagonalCalculation(DpDiagonal<double, fiveState> *curr, 
                                DpDiagonal<double, fiveState> *m1, 
                                DpDiagonal<double, fiveState> *m2, 
@@ -83,14 +104,13 @@ public:
                                TransitionFunction do_transition);
     
     void DpDiagonalCalculation(int64_t xay, DpMatrix<double, fiveState>& mat, 
-                               const SymbolString& sX, 
-                               const SymbolString& sY, 
+                               const SymbolString& sX, const SymbolString& sY, 
                                TransitionFunction do_transition);
 
     StateMachineType type;
     
 private:
-    // transitions
+    // transitions for 5-state HMM
     double TRANSITION_MATCH_CONTINUE; //0.9703833696510062f
     double TRANSITION_MATCH_FROM_SHORT_GAP_X; //1.0 - gapExtend - gapSwitch = 0.280026392297485
     double TRANSITION_MATCH_FROM_LONG_GAP_X; //1.0 - gapExtend = 0.00343657420938

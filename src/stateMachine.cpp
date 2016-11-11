@@ -1,11 +1,12 @@
 #include "stateMachine.h"
 
 
-// StateMachine base class
+// StateMachine interface constructor, not very exciting
 template<size_t set_size, size_t state_number>
 StateMachine<set_size, state_number>::StateMachine() {  }
 
-// StateMachine5 
+// StateMachine5 constructor, initializes the transitions to defaults for nucleotide/nucleotide 
+// alignments, makes a symmetrical hmm by default
 template<size_t set_size>
 StateMachine5<set_size>::StateMachine5() { 
     TRANSITION_MATCH_CONTINUE          =-0.030064059121770816; //0.9703833696510062f
@@ -31,11 +32,11 @@ StateMachine5<set_size>::StateMachine5() {
 }
 
 template<size_t set_size>
-const int64_t StateMachine5<set_size>::StateNumber() const {
-    //return StateMachine<set_size, 5>::_state_number;
-    return 5;
-}
+const int64_t StateMachine5<set_size>::StateNumber() const { return fiveState; }
 
+// Used to initialize emsissions matrices. The compiler should check for the correct size 
+// of the input to `initFunc`, i.e. it should check that you're handing a `nucleotide` 
+// function to a `nucleotide` statemachine but this hasn't been checked yet. 
 template<size_t set_size>
 void StateMachine5<set_size>::InitializeEmissions(EmissionsInitFunction<set_size> initFunc) {
     initFunc(StateMachine<set_size, fiveState>::match_probs, 
@@ -43,6 +44,8 @@ void StateMachine5<set_size>::InitializeEmissions(EmissionsInitFunction<set_size
              StateMachine<set_size, fiveState>::y_gap_probs);
 }
 
+// ragged end makes a local alignment if true, global otherwise same for below
+// `EndStateProb` functions
 template<size_t set_size>
 double StateMachine5<set_size>::StartStateProb(HiddenState state, bool ragged_end) {
     if (ragged_end) {
@@ -111,6 +114,7 @@ std::function<double(HiddenState s, bool re)> StateMachine5<set_size>::StartStat
     return lambda;
 }
 
+// Emissions functions
 template<size_t set_size>
 double StateMachine5<set_size>::GapXProb(Symbol cX) {
     if (cX > set_size) throw ParcoursException("[StateMachine5::GapXProb] Illegal symbol %i", cX);
@@ -137,6 +141,9 @@ template<size_t set_size>
 void StateMachine5<set_size>::CellCalculate(double *current, double *lower, double *middle, double *upper,
                                             const Symbol& cX, const Symbol& cY,
                                             TransitionFunction do_transition) {
+    // | middle | upper |
+    // | lower  |current|
+    // NB: currently does not allow for "long gap switch" transitions. 
     if (lower != nullptr) {
         double eP = GapXProb(cX);
         do_transition(lower, current, match, shortGapX, eP, TRANSITION_GAP_SHORT_OPEN_X);
