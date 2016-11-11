@@ -163,6 +163,56 @@ void StateMachine5<set_size>::CellCalculate(double *current, double *lower, doub
     }
 }
 
+template<size_t set_size>
+void StateMachine5<set_size>::DpDiagonalCalculation(DpDiagonal<double, fiveState> *curr, 
+                                                    DpDiagonal<double, fiveState> *m1, 
+                                                    DpDiagonal<double, fiveState> *m2, 
+                                                    const SymbolString& cX, const SymbolString& cY,
+                                                    TransitionFunction do_transition) {
+    int64_t xmy = curr->DiagonalGetter().MinXmy();
+    
+    auto get_position = [] (const SymbolString& S, int64_t XaY, int64_t XmY, 
+                              int64_t (*coord_func)(int64_t, int64_t)) -> int64_t {
+        int64_t x = coord_func(XaY, XmY);
+        if (x < 0 || x > S.size()) throw ParcoursException(
+                "[StateMachine5::DpDiagonalCalculation] Illegal coordinate %" PRIi64 "\n", x);
+        return x;
+    };
+
+    while (xmy <= curr->DiagonalGetter().MaxXmy()) {
+        // get the indices of the things
+        int64_t iX = get_position(cX, curr->DiagonalGetter().Xay(), xmy, 
+                                  diagonal_XCoordinate) - 1;  // minus 1 to preserve legacy awesomeness
+        int64_t iY = get_position(cY, curr->DiagonalGetter().Xay(), xmy, 
+                                  diagonal_YCoordinate) - 1;  // minus 1 to preserve legacy awesomeness
+        
+        Symbol x = iX >= 0 ? cX.at(iX) : n;
+        Symbol y = iY >= 0 ? cY.at(iY) : n;
+
+        // do the calculation
+        double *current = curr->CellGetter(xmy);
+        double *lower   = m1 == nullptr ? nullptr : m1->CellGetter((xmy - 1));
+        double *middle  = m2 == nullptr ? nullptr : m2->CellGetter(xmy);
+        double *upper   = m1 == nullptr ? nullptr : m1->CellGetter((xmy + 1));
+        CellCalculate(current, lower, middle, upper, x, y, do_transition);
+        xmy += 2;
+    }
+}
+
+
+template<size_t set_size>
+void StateMachine5<set_size>::DpDiagonalCalculation(int64_t xay, DpMatrix<double, fiveState>& mat, 
+                                                    const SymbolString& sX, 
+                                                    const SymbolString& sY, 
+                                                    TransitionFunction do_transition) {
+    DpDiagonalCalculation(mat.DpDiagonalGetter(xay), 
+                          mat.DpDiagonalGetter(xay - 1), 
+                          mat.DpDiagonalGetter(xay - 2), 
+                          sX, sY, 
+                          do_transition);
+}
+
+
 void DoTransitionForward::operator () (double *from_cells, double *to_cells, 
                                        HiddenState from, HiddenState to, 
                                        double eP, double tP) {

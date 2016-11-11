@@ -33,6 +33,8 @@ typedef enum {
 
 typedef std::vector<std::pair<int64_t, int64_t>> AnchorPairs;
 
+typedef std::vector<Symbol> SymbolString;
+
 void st_uglyf(const char *string, ...);
 
 #endif //PARCOURS_COMMON_H

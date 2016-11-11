@@ -4,6 +4,7 @@
 #include "stl_includes.h"
 #include "common.h"
 #include "dpMatrix.h"
+#include "dpDiagonal.h"
 #include "logAdd.h"
 
 typedef std::function<void(double *, double *, HiddenState, HiddenState, double, double)> TransitionFunction;
@@ -71,11 +72,22 @@ public:
 
     const int64_t SetSize() const;
 
-    StateMachineType type;
-    //constexpr StateMachineType Type() const;
     void CellCalculate(double *current, double *lower, double *middle, double *upper,
                        const Symbol& cX, const Symbol& cY,
                        TransitionFunction do_transition);
+
+    void DpDiagonalCalculation(DpDiagonal<double, fiveState> *curr, 
+                               DpDiagonal<double, fiveState> *m1, 
+                               DpDiagonal<double, fiveState> *m2, 
+                               const SymbolString& cX, const SymbolString& cY,
+                               TransitionFunction do_transition);
+    
+    void DpDiagonalCalculation(int64_t xay, DpMatrix<double, fiveState>& mat, 
+                               const SymbolString& sX, 
+                               const SymbolString& sY, 
+                               TransitionFunction do_transition);
+
+    StateMachineType type;
     
 private:
     // transitions

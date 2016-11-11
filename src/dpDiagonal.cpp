@@ -70,8 +70,8 @@ void DpDiagonal<T, sn>::InitValues(std::function<double(HiddenState s, bool re)>
 
 template<class T, size_t sn>
 T DpDiagonal<T, sn>::Dot(DpDiagonal& d2) {
-    if (!active) throw ParcoursException("[DpDiagonal::Dot] Diagonal not active\n");
-    if (!d2.IsActive()) throw ParcoursException("[DpDiagonal::Dot] other diagonal not active\n");
+    if (!active) throw ParcoursException("[DpDiagonal::Dot(DpDiagonal)] Diagonal not active\n");
+    if (!d2.IsActive()) throw ParcoursException("[DpDiagonal::Dot(DpDiagonal)] other diagonal not active\n");
     double total_prob = LOG_ZERO;
     int64_t xmy = diagonal.MinXmy();
     while (xmy <= diagonal.MaxXmy()) {
@@ -85,7 +85,13 @@ T DpDiagonal<T, sn>::Dot(DpDiagonal& d2) {
     }
     return total_prob;
 }
-
+/*
+template<class T, size_t sn>
+T DpDiagonal<T, sn>::Dot(int64_t xmy, std::function<double(HiddenState s, bool re)> StateValueGetter) {
+    if (!active) throw ParcoursException("[DpDiagonal::Dot(DpDiagonal)] Diagonal not active\n");
+    double 
+}
+*/
 template<class T, size_t sn>
 int64_t DpDiagonal<T, sn>::StateNumber() { return _state_number; }
 

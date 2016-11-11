@@ -204,15 +204,16 @@ TEST_CASE("Test DpDiagonal", "[DpTests]") {
 TEST_CASE("Test DpMatrix", "[DpTests]") {
     SECTION("DpMatrix is constructed with correct defaults") {
         int64_t x = RandomInt(10, 20);
-        DpMatrix<double, fiveState> mat(x);
+        int64_t y = RandomInt(10, 20);
+        DpMatrix<double, fiveState> mat(x, y);
         REQUIRE(mat.ActiveDiagonals() == 0);
-        REQUIRE(mat.DiagonalNumber() == x);
+        REQUIRE(mat.DiagonalNumber() == x + y);
     }
     SECTION("DpMatrix main tests") {
         int64_t lX = 3;
         int64_t lY = 2;
 
-        DpMatrix<double, fiveState> mat(lX + lY);
+        DpMatrix<double, fiveState> mat(lX, lY);
 
         REQUIRE(mat.ActiveDiagonals() == 0);
         
@@ -241,8 +242,8 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
 }
 
 TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
-    std::vector<Symbol> sX = {{a, g, c, g}};
-    std::vector<Symbol> sY = {{a, g, t, t, c, g}};
+    SymbolString sX = {{a, g, c, g}};
+    SymbolString sY = {{a, g, t, t, c, g}};
     
     int64_t lX = sX.size();
     int64_t lY = sY.size();
@@ -251,8 +252,8 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     sM5.InitializeEmissions(SetNucleotideEmissionsToDefauts());
     
     // TODO make this into an init function for DpMatrix
-    DpMatrix<double, fiveState> forward_mat(lX + lY);
-    DpMatrix<double, fiveState> backward_mat(lX + lY);
+    DpMatrix<double, fiveState> forward_mat(lX, lY);
+    DpMatrix<double, fiveState> backward_mat(lX, lY);
     
     AnchorPairs anchors;
     
@@ -263,11 +264,24 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
 
     for (int64_t i = 0; i <= forward_mat.DiagonalNumber(); i++) {
         Diagonal d = band.Next();
-        st_uglyf("Making diagonal %s\n", d.ToString().c_str());
+        //st_uglyf("Making diagonal %s\n", d.ToString().c_str());
         forward_mat.AddDiagonal(d);
         backward_mat.AddDiagonal(d);
     }
     forward_mat.DpDiagonalGetter(0)->InitValues(sM5.StartStateProbFcn());
     backward_mat.DpDiagonalGetter(backward_mat.DiagonalNumber())->InitValues(sM5.EndStateProbFcn());
 
+    // forward 
+    for (int64_t i = 1; i <= forward_mat.DiagonalNumber(); i++) {
+        sM5.DpDiagonalCalculation(i, forward_mat, sX, sY, DoTransitionForward());
+    }
+    // backward
+    for (int64_t i = backward_mat.DiagonalNumber(); i > 0; i--) {
+        sM5.DpDiagonalCalculation(i, backward_mat, sX, sY, DoTransitionBackward());
+    }
+    
+    double total_forward_prob = forward_mat.TotalProbability(sM5.EndStateProbFcn(), true);
+    double total_backward_prob = backward_mat.TotalProbability(sM5.StartStateProbFcn(), false);
+    //st_uglyf("total forward p :%f total backward p: %f\n", total_forward_prob, total_backward_prob);
+    REQUIRE(std::abs(total_forward_prob - total_backward_prob) < 0.001);
 }

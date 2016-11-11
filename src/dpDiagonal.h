@@ -30,6 +30,8 @@ public:
     
     T Dot(DpDiagonal& d2);
 
+    //T Dot(std::function<double(HiddenState s, bool re)> StateValueGetter);
+
     int64_t StateNumber();
 
     bool IsActive();

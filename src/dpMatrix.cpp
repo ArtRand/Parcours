@@ -1,14 +1,21 @@
 #include "dpMatrix.h"
 
 template<class T, size_t sn>
-DpMatrix<T, sn>::DpMatrix(int64_t dn): diagonal_number(dn), active_diagonals(0) {}
+DpMatrix<T, sn>::DpMatrix(int64_t lx, int64_t ly): diagonal_number(lx + ly), 
+                                                   active_diagonals(0), 
+                                                   lX(lx), lY(ly)
+{
+    // nada
+}
 
 template<class T, size_t sn>
 DpDiagonal<T, sn> *DpMatrix<T, sn>::DpDiagonalGetter(int64_t xay) {
     if (!DiagonalCheck(xay)) {
         //throw ParcoursException("[DpMatrix::DpDiagonalGetter] No Diagonal at %" PRIi64 "\n", xay);
+        //st_uglyf("SENTINAL: no dp diagonal at %lld returning null\n", xay);
         return nullptr;
     }
+    //st_uglyf("SENTINAL: getting dp diagonal at %lld\n", xay);
     return &dpDiagonals.at(xay);
 }
 
@@ -48,6 +55,24 @@ void DpMatrix<T, sn>::DeleteDpDiagonal(int64_t xay) {
     active_diagonals--;
     if (active_diagonals < 0) throw ParcoursException(
             "[DpMatrix::DeleteDiagonal] active diagonals cannot become negative\n");
+}
+
+template<class T, size_t sn>
+T DpMatrix<T, sn>::TotalProbability(std::function<double(HiddenState s, bool re)> StateValueGetter, 
+                                    bool forward) {
+    auto dot_prod = [this] (double *cell, std::function<double(HiddenState s, bool re)> fc) -> double {
+        double total_prob = cell[0] + fc(match, false);
+        for (size_t s = 1; s < _state_number; s++) {
+            total_prob = logAdd(total_prob, cell[s] + fc(static_cast<HiddenState>(s), false));
+        }
+        return total_prob;
+    };
+    
+    int64_t final_diag = forward ? lX + lY : 0;
+    DpDiagonal<T, sn> *d = DpDiagonalGetter(final_diag);
+    int64_t final_cell = forward ? lX - lY : 0;
+    double *cell = d->CellGetter(final_cell);
+    return dot_prod(cell, StateValueGetter);
 }
 
 template<class T, size_t sn>
