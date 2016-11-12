@@ -23,6 +23,8 @@ public:
 
     int64_t Width();
 
+    void Set(int64_t xay, int64_t xmyL, int64_t xmyR);
+
     std::string ToString();
     
     bool operator == (Diagonal& other) const;

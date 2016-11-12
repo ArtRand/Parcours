@@ -14,12 +14,14 @@ public:
 
     int64_t ActiveDiagonals();
 
+    // checks for proper input xay, cannot be < 0, > diagonal number or >= len(dpDiagonals)
     bool DiagonalCheck(int64_t xay);
 
     void CreateDpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR);
 
-    void AddDiagonal(Diagonal d);
+    void CreateDpDiagonal(Diagonal d);
 
+    // 
     void DeleteDpDiagonal(int64_t xay);
     
     int64_t DiagonalNumber();

@@ -10,6 +10,8 @@
 template<class T, size_t sn>
 class DpDiagonal {
 public:
+    DpDiagonal();
+
     DpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR);
 
     bool operator == (DpDiagonal& other) const;
@@ -30,15 +32,13 @@ public:
     
     T Dot(DpDiagonal& d2);
 
-    //T Dot(std::function<double(HiddenState s, bool re)> StateValueGetter);
-
     int64_t StateNumber();
 
     bool IsActive();
 
     void Deactivate();
 
-    void Activate();
+    void Activate(int64_t xay, int64_t xmyL, int64_t xmyR);
 
 private:
     int64_t state_index(int64_t xmy, HiddenState s);

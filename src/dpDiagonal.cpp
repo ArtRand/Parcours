@@ -1,5 +1,10 @@
 #include "dpDiagonal.h"
 
+template<class T, size_t sn> 
+DpDiagonal<T, sn>::DpDiagonal(): diagonal(-1, -1, -1) {
+    active = false;
+}
+
 template<class T, size_t sn>
 DpDiagonal<T, sn>::DpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR): diagonal(xay, xmyL, xmyR) {
     assert(diagonal.Width() >= 0);
@@ -30,10 +35,9 @@ T DpDiagonal<T, sn>::CellGetVal(int64_t xmy, HiddenState s) {
         return std::numeric_limits<T>::quiet_NaN();
     }
 
-    if ((diagonal.Xay() + xmy) % 2 != 0) {
-        throw ParcoursException("[DpDiagonal::CellGetVal] Illegal request %" PRIi64 "\n", xmy);
-    }
-    //return cells.at((((xmy - diagonal.MinXmy()) / 2) * _state_number) + s);
+    if ((diagonal.Xay() + xmy) % 2 != 0) throw ParcoursException(
+            "[DpDiagonal::CellGetVal] Illegal request %" PRIi64 "\n", xmy);
+    
     return cells.at(state_index(xmy, s));
 }
 
@@ -45,6 +49,7 @@ T *DpDiagonal<T, sn>::CellGetter(int64_t xmy) {
     // return 'match' index so that we're at the start of the cell
     return &cells.at(state_index(xmy, match));
 }
+
 template<class T, size_t sn>
 void DpDiagonal<T, sn>::CellSetter(int64_t xmy, HiddenState s, T value) {
     if (!active) throw ParcoursException("[DpDiagonal::CellSetter] DpDiagonal not active\n");
@@ -85,13 +90,7 @@ T DpDiagonal<T, sn>::Dot(DpDiagonal& d2) {
     }
     return total_prob;
 }
-/*
-template<class T, size_t sn>
-T DpDiagonal<T, sn>::Dot(int64_t xmy, std::function<double(HiddenState s, bool re)> StateValueGetter) {
-    if (!active) throw ParcoursException("[DpDiagonal::Dot(DpDiagonal)] Diagonal not active\n");
-    double 
-}
-*/
+
 template<class T, size_t sn>
 int64_t DpDiagonal<T, sn>::StateNumber() { return _state_number; }
 
@@ -101,14 +100,23 @@ bool DpDiagonal<T, sn>::IsActive() { return active; }
 template<class T, size_t sn>
 void DpDiagonal<T, sn>::Deactivate() { 
     if (!active) throw ParcoursException("[DpDiagonal::Deactivate] Cannot deactivate deactive diagonal\n");
+    diagonal.Set(-1, -1, -1);
     cells.clear();
     active = false; 
 }
 
+//template<class T, size_t sn>
+//void DpDiagonal<T, sn>::Activate() { 
+//    if (active) throw ParcoursException("[DpDiagonal::Activate] Cannot activate active diagonal\n");
+//    active = true; 
+//}
+
 template<class T, size_t sn>
-void DpDiagonal<T, sn>::Activate() { 
-    if (active) throw ParcoursException("[DpDiagonal::Activate] Cannot activate active diagonal\n");
-    active = true; 
+void DpDiagonal<T, sn>::Activate(int64_t xay, int64_t xmyL, int64_t xmyR) {
+    diagonal.Set(xay, xmyL, xmyR);
+    assert(diagonal.Width() >= 0);
+    cells.resize(sn * diagonal.Width(), LOG_ZERO);
+    active = true;
 }
 
 template<class T, size_t sn>

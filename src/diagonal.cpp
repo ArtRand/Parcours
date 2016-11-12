@@ -8,8 +8,8 @@ Diagonal::Diagonal(int64_t ay, int64_t L, int64_t R) {
     xay = ay;
     xmyL = L;
     xmyR = R;
-    assert(xmyL <= xmyR);
-    assert(xay >= 0);
+    //assert(xmyL <= xmyR);
+    //assert(xay >= 0);
 }
 
 int64_t Diagonal::Xay() { return xay; }
@@ -19,6 +19,12 @@ int64_t Diagonal::MinXmy() { return xmyL; }
 int64_t Diagonal::MaxXmy() { return xmyR; }
 
 int64_t Diagonal::Width() { return (xmyR - xmyL) / 2 + 1; }
+
+void Diagonal::Set(int64_t XaY, int64_t xmyl, int64_t xmyr) {
+    xay  = XaY;
+    xmyL = xmyl;
+    xmyR = xmyr;
+}
 
 std::string Diagonal::ToString() {
     char buff[100];
@@ -33,11 +39,13 @@ bool Diagonal::operator == (Diagonal& other) const {
 }
 
 int64_t diagonal_XCoordinate(int64_t ay, int64_t my) {
-    if ((ay + my) % 2 != 0) throw ParcoursException("[Diagonal::XCoordinate]: Illegal input\n");
+    if ((ay + my) % 2 != 0) throw ParcoursException(
+            "[Diagonal::XCoordinate]: Illegal input xay %" PRIi64 "xmy %" PRIi64 "\n", ay, my);
     return (ay + my) / 2;
 }
 
 int64_t diagonal_YCoordinate(int64_t ay, int64_t my) {
-    if ((ay + my) % 2 != 0) throw ParcoursException("[Diagonal::YCoordinate]: Illegal input\n");
+    if ((ay + my) % 2 != 0) throw ParcoursException(
+            "[Diagonal::YCoordinate]: Illegal input xay %" PRIi64 "xmy %" PRIi64 "\n", ay, my);
     return (ay - my) / 2;
 }

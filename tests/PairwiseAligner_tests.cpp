@@ -220,10 +220,8 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
         
         // check for 'fantom' diagonals
         for (int64_t i = -1; i <= lX + lY + 10; i++) {
-            //REQUIRE_THROWS_AS(mat.DpDiagonalGetter(i), ParcoursException);
             REQUIRE(mat.DpDiagonalGetter(i) == nullptr);
         }
-
         // make some diagonals in the dpMatrix, and check them, then make sure that
         // the number of active diagonals is correct.
         for (int64_t i = 0; i <= lX + lY; i++) {
@@ -232,11 +230,10 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
             REQUIRE(*mat.DpDiagonalGetter(i) == d);
             REQUIRE(mat.ActiveDiagonals() == i + 1);
         }
-
-        // delete the diagonals
+        // delete the diagonals 
         for (int64_t i = lX + lY; i >= 0; i--) {
             mat.DeleteDpDiagonal(i);
-            REQUIRE(!mat.DpDiagonalGetter(i)->IsActive());
+            REQUIRE(mat.DpDiagonalGetter(i) == nullptr);
             REQUIRE(mat.ActiveDiagonals() == i);
         }
     }
@@ -267,8 +264,8 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     for (int64_t i = 0; i <= forward_mat.DiagonalNumber(); i++) {
         Diagonal d = band.Next();
         //st_uglyf("Making diagonal %s\n", d.ToString().c_str());
-        forward_mat.AddDiagonal(d);
-        backward_mat.AddDiagonal(d);
+        forward_mat.CreateDpDiagonal(d);
+        backward_mat.CreateDpDiagonal(d);
     }
     forward_mat.DpDiagonalGetter(0)->InitValues(sM5.StartStateProbFcn());
     backward_mat.DpDiagonalGetter(backward_mat.DiagonalNumber())->InitValues(sM5.EndStateProbFcn());

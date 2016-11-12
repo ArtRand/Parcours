@@ -4,20 +4,21 @@ template<class T, size_t sn>
 DpMatrix<T, sn>::DpMatrix(int64_t lx, int64_t ly): diagonal_number(lx + ly), 
                                                    active_diagonals(0), 
                                                    lX(lx), lY(ly) {
-    dpDiagonals.reserve(lx + ly);
+    dpDiagonals.resize(lx + ly + 1);
 }
 
 template<class T, size_t sn>
 DpDiagonal<T, sn> *DpMatrix<T, sn>::DpDiagonalGetter(int64_t xay) {
-    if (!DiagonalCheck(xay)) {
-        return nullptr;
-    }
+    if (!DiagonalCheck(xay)) return nullptr;
     return &dpDiagonals.at(xay);
 }
 
 template<class T, size_t sn>
 bool DpMatrix<T, sn>::DiagonalCheck(int64_t xay) {
-    if (xay < 0 || xay > diagonal_number || xay >= static_cast<int>(dpDiagonals.size())) {
+    if (xay < 0 || 
+        xay > diagonal_number || 
+        xay >= static_cast<int>(dpDiagonals.size()) || 
+        !dpDiagonals.at(xay).IsActive()) {
         return false;
     } 
     return true;
@@ -31,13 +32,14 @@ void DpMatrix<T, sn>::CreateDpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR) 
             "[DpMatrix::CreateDpDiagonal] Invalid, xay > diagonal_number");
     if (xay > static_cast<int>(dpDiagonals.size())) throw ParcoursException(
             "[DpMatrix::CreateDpDiagonal] Invalid, xay > len(dpDiagonals)");
-    DpDiagonal<T, sn> d(xay, xmyL, xmyR);
-    dpDiagonals.insert(begin(dpDiagonals) + xay, d);
+    //DpDiagonal<T, sn> d(xay, xmyL, xmyR);
+    //dpDiagonals.insert(begin(dpDiagonals) + xay, d);
+    dpDiagonals.at(xay).Activate(xay, xmyL, xmyR);
     active_diagonals++;
 }
 
 template<class T, size_t sn>
-void DpMatrix<T, sn>::AddDiagonal(Diagonal d) {
+void DpMatrix<T, sn>::CreateDpDiagonal(Diagonal d) {
     CreateDpDiagonal(d.Xay(), d.MinXmy(), d.MaxXmy());
 }
 

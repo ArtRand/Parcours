@@ -146,6 +146,8 @@ struct DoTransitionBackward {
                       double eP, double tP);
 };
 
+// Sets the state machine (HMM) emissions tables (GAPS and MATCHES) 
+// to sensible defaults. 
 EmissionsInitFunction<nucleotide> SetNucleotideEmissionsToDefauts();
 
 #endif

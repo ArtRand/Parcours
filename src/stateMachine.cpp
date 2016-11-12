@@ -187,23 +187,24 @@ void StateMachine5<set_size>::DpDiagonalCalculation(DpDiagonal<double, fiveState
                                                     TransitionFunction do_transition) {
     int64_t xmy = curr->DiagonalGetter().MinXmy();
     
-    auto get_position = [] (const SymbolString& S, int64_t XaY, int64_t XmY, 
-                              int64_t (*coord_func)(int64_t, int64_t)) -> int64_t {
-        int64_t x = coord_func(XaY, XmY);
-        if (x < 0 || x > static_cast<int64_t>(S.size())) throw ParcoursException(
-                "[StateMachine5::DpDiagonalCalculation] Illegal coordinate %" PRIi64 "\n", x);
-        return x;
+    // corrects the position in the diagonal to the position in the sequence (X or Y) 
+    // depending on the `coord_func` passed. Checks for "before the start" of the position
+    // and returns `n` Symbol. N.B. could be implemented to work with generalized 
+    // sequence objects that have a default ~NULL~ symbol.
+    auto get_symbol = [] (const SymbolString& S, int64_t XaY, int64_t XmY, 
+                              int64_t (*coord_func)(int64_t, int64_t)) -> Symbol {
+        int64_t idx = coord_func(XaY, XmY);
+        if (idx < 0 || idx > static_cast<int64_t>(S.size())) throw ParcoursException(
+                "[StateMachine5::DpDiagonalCalculation] Illegal coordinate %" PRIi64 "\n", idx);
+        idx = idx - 1;  // minus 1 to preserve legacy awesomeness
+        return idx >= 0 ? S.at(idx) : n;
     };
 
+    // walk from min xmy to max xmy
     while (xmy <= curr->DiagonalGetter().MaxXmy()) {
         // get the indices of the things
-        int64_t iX = get_position(cX, curr->DiagonalGetter().Xay(), xmy, 
-                                  diagonal_XCoordinate) - 1;  // minus 1 to preserve legacy awesomeness
-        int64_t iY = get_position(cY, curr->DiagonalGetter().Xay(), xmy, 
-                                  diagonal_YCoordinate) - 1;  // minus 1 to preserve legacy awesomeness
-        
-        Symbol x = iX >= 0 ? cX.at(iX) : n;
-        Symbol y = iY >= 0 ? cY.at(iY) : n;
+        Symbol x = get_symbol(cX, curr->DiagonalGetter().Xay(), xmy, diagonal_XCoordinate);
+        Symbol y = get_symbol(cY, curr->DiagonalGetter().Xay(), xmy, diagonal_YCoordinate);        
 
         // do the calculation
         double *current = curr->CellGetter(xmy);
@@ -214,7 +215,6 @@ void StateMachine5<set_size>::DpDiagonalCalculation(DpDiagonal<double, fiveState
         xmy += 2;
     }
 }
-
 
 template<size_t set_size>
 void StateMachine5<set_size>::DpDiagonalCalculation(int64_t xay, DpMatrix<double, fiveState>& mat, 
