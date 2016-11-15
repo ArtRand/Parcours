@@ -23,18 +23,10 @@ typedef enum _statemachine_type {
     fiveState = 5,
 } StateMachineType;
 
-typedef enum {
-    a=0,
-    c=1,
-    g=2,
-    t=3,
-    n=4,
-} Symbol;
 
 typedef std::vector<std::pair<int64_t, int64_t>> AnchorPairs;
-typedef std::vector<std::tuple<double, int64_t, int64_t>> AlignedPairs;
-
-typedef std::vector<Symbol> SymbolString;
+typedef std::tuple<double, int64_t, int64_t> AlignedPair;
+typedef std::vector<AlignedPair> AlignedPairs;
 
 void st_uglyf(const char *string, ...);
 

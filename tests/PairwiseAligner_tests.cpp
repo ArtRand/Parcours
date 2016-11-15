@@ -10,6 +10,8 @@
 #include "stateMachine.h"
 #include "pairwise_aligner.h"
 #include "test_helpers.h"
+#include "symbol_string.h"
+
 
 TEST_CASE("Diagonal Tests", "[PairwiseAligner]") {
     int64_t xL = 10, yL = 20, xU = 30, yU = 0; //Coordinates of the upper and lower
@@ -233,13 +235,62 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
         // delete the diagonals 
         for (int64_t i = lX + lY; i >= 0; i--) {
             mat.DeleteDpDiagonal(i);
+            REQUIRE_THROWS_AS(mat.DeleteDpDiagonal(i), ParcoursException);
             REQUIRE(mat.DpDiagonalGetter(i) == nullptr);
             REQUIRE(mat.ActiveDiagonals() == i);
         }
     }
 }
 
-TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
+void CheckAlignedPairs(AlignedPairs pairs, int64_t lX, int64_t lY) {
+    auto compare_aligned_pair = [] (AlignedPair p1, AlignedPair p2) -> bool {
+        return std::get<0>(p1) == std::get<0>(p2) && 
+               std::get<1>(p1) == std::get<1>(p2) &&
+               std::get<2>(p1) == std::get<2>(p2);
+    };
+    
+    // quickly check this
+    AlignedPair _p  = std::make_tuple(1.0, 1, 1);
+    AlignedPair _p2 = std::make_tuple(1.0, 1, 1);
+    AlignedPair _p3 = std::make_tuple(1.0, 0, 1);
+    AlignedPair _p4 = std::make_tuple(0.5, 0, 1);
+
+    REQUIRE(compare_aligned_pair(_p, _p2));
+    REQUIRE(!(compare_aligned_pair(_p, _p3)));
+    REQUIRE(!(compare_aligned_pair(_p3, _p4)));
+
+    st_uglyf("got %lu pairs to check\n", pairs.size());
+
+    // check the validity of the pairs
+    for (AlignedPair p : pairs) {
+        REQUIRE(std::tuple_size<decltype(p)>::value == 3);  // correct length, trivial
+        double score = std::get<0>(p);
+        int64_t x    = std::get<1>(p);
+        int64_t y    = std::get<2>(p);
+        REQUIRE(score > 0);  // scores must be positive 
+        REQUIRE(score <= PAIR_ALIGNMENT_PROB_1);  // scores cannot be more than this multiplier
+        REQUIRE((x >= 0 && x < lX));  // pairs cannot be negative or 'beyond' the length of the sequence
+        REQUIRE((y >= 0 && y < lY));  // pairs cannot be negative or 'beyond' the length of the sequence
+    }
+    // check that all pairs are unique
+    auto compare_fcn = [] (AlignedPair p1, AlignedPair p2) -> bool {
+        if (std::get<1>(p1) == std::get<1>(p2)) {
+            return std::get<2>(p1) < std::get<2>(p2);
+        } else {
+            return std::get<1>(p1) < std::get<1>(p2);
+        }
+    };
+    
+    std::sort(begin(pairs), end(pairs), compare_fcn);
+    
+    AlignedPair p = pairs.at(0);
+    for (uint64_t i = 1; i < pairs.size(); i++) {
+        REQUIRE(!(compare_aligned_pair(pairs.at(i), p)));
+        p = pairs.at(i);
+    }
+}
+
+TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
     SymbolString sX = {{a, g, c, g}};
     SymbolString sY = {{a, g, t, t, c, g}};
     
@@ -254,7 +305,10 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     DpMatrix<double, fiveState> backward_mat(lX, lY);
     
     AnchorPairs anchors;
-    
+    anchors.emplace_back(0, 0);
+    anchors.emplace_back(1, 1);
+    anchors.emplace_back(3, 5);
+
     int64_t expansion = 2; 
     Band<double, fiveState> band(anchors, lX, lY, expansion);
     
@@ -263,7 +317,6 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
 
     for (int64_t i = 0; i <= forward_mat.DiagonalNumber(); i++) {
         Diagonal d = band.Next();
-        //st_uglyf("Making diagonal %s\n", d.ToString().c_str());
         forward_mat.CreateDpDiagonal(d);
         backward_mat.CreateDpDiagonal(d);
     }
@@ -294,7 +347,7 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
                                     aligned_pairs);
     }
     REQUIRE(aligned_pairs.size() == 4);
-    
+    CheckAlignedPairs(aligned_pairs, lX, lY);   
     // extracts just the aligned pair coordinates, leaves the posteriors
     auto pairs_no_probs = [&aligned_pairs] () -> AnchorPairs {
         AnchorPairs pairs;
@@ -313,3 +366,22 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests]") {
     correct_pairs.emplace_back(3, 5);
     REQUIRE(correct_pairs == pairs_no_probs);
 }
+
+
+TEST_CASE("Test GetAlignedPairs", "[alignment]") {
+    // generate some random (similar) sequences
+    std::string sX = RandomNucleotides(RandomInt(100, 200));
+    std::string sY = EvolveSequence(sX);
+    st_uglyf("Seq X : %s\nSeq Y : %s\n", sX.c_str(), sY.c_str());
+
+    AnchorPairs anchors = RandomAnchorPairs(sX.size(), sY.size());
+    
+    st_uglyf("Got %" PRIi64 " random anchor pairs\n", anchors.size());
+    
+    SymbolString SsX = SymbolStringFromString(sX);
+    SymbolString SsY = SymbolStringFromString(sY);
+    
+    
+    
+}
+

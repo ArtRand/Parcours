@@ -6,9 +6,10 @@
 #include "dpMatrix.h"
 #include "dpDiagonal.h"
 #include "logAdd.h"
+#include "symbol_string.h"
 
 // TransitionFunction, is used to designate forward or backward calculations 
- typedef std::function<void(double *, double *, HiddenState, HiddenState, double, double)> TransitionFunction;
+typedef std::function<void(double *, double *, HiddenState, HiddenState, double, double)> TransitionFunction;
 
 // EmissionsInitFunction, a wrapper around functions used to initialize the 
 // emissions/transitions matrices of the state machine

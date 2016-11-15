@@ -28,8 +28,8 @@ void Diagonal::Set(int64_t XaY, int64_t xmyl, int64_t xmyr) {
 
 std::string Diagonal::ToString() {
     char buff[100];
-    std::sprintf(buff, "Diagonal, xay: %" PRIi64 " xmyL %" PRIi64 ", xmyR: %" PRIi64 "", 
-                 Xay(), MinXmy(), MaxXmy());
+    std::sprintf(buff, "Diagonal, xay: %" PRIi64 " xmyL %" PRIi64 ", xmyR: %" PRIi64 ", width %" PRIi64 "", 
+                 Xay(), MinXmy(), MaxXmy(), Width());
     std::string s(buff);
     return s;
 }

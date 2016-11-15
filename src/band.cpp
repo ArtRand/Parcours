@@ -53,10 +53,8 @@ Band<T, sn>::Band(std::vector<std::pair<int64_t, int64_t>> anchors,
     auto bound_coordinate = [] (int64_t z, int64_t lZ) -> int64_t { return z < 0 ? 0 : (z > lZ ? lZ : z); };
 
     while (XaY <= maxLxLy) {
-        //st_uglyf("xay: %lld, nxay: %lld\n", XaY, nxay);
         set_current_diagonal(xL, yL, xU, yU);
         if (nxay == XaY++) {
-            //st_uglyf("-->if loop! xay %lld, nxay %lld\n", XaY, nxay);
             //The previous diagonals become the next
             pxay = nxay;
             pxmy = nxmy;

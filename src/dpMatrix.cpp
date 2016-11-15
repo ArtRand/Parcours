@@ -32,8 +32,6 @@ void DpMatrix<T, sn>::CreateDpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR) 
             "[DpMatrix::CreateDpDiagonal] Invalid, xay > diagonal_number");
     if (xay > static_cast<int>(dpDiagonals.size())) throw ParcoursException(
             "[DpMatrix::CreateDpDiagonal] Invalid, xay > len(dpDiagonals)");
-    //DpDiagonal<T, sn> d(xay, xmyL, xmyR);
-    //dpDiagonals.insert(begin(dpDiagonals) + xay, d);
     dpDiagonals.at(xay).Activate(xay, xmyL, xmyR);
     active_diagonals++;
 }
@@ -49,6 +47,8 @@ void DpMatrix<T, sn>::DeleteDpDiagonal(int64_t xay) {
             "[DpMatrix::DeleteDpDiagonal] Invalid xay > 0\n");
     if (xay > diagonal_number) throw ParcoursException(
             "[DpMatrix::DeleteDpDiagonal] Invalid xay > diagonal_number");
+    if (!dpDiagonals.at(xay).IsActive()) throw ParcoursException(
+            "[DpMatrix::DeleteDiagonal] Cannot delete deactive diagonal\n");
     dpDiagonals.at(xay).Deactivate();
     active_diagonals--;
     if (active_diagonals < 0) throw ParcoursException(

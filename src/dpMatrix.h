@@ -14,14 +14,17 @@ public:
 
     int64_t ActiveDiagonals();
 
-    // checks for proper input xay, cannot be < 0, > diagonal number or >= len(dpDiagonals)
+    // checks for illegal input xay, cannot be < 0, > diagonal number or >= len(dpDiagonals),
+    // also retruns false if the diagonal at xay is inactive 
     bool DiagonalCheck(int64_t xay);
 
     void CreateDpDiagonal(int64_t xay, int64_t xmyL, int64_t xmyR);
 
     void CreateDpDiagonal(Diagonal d);
 
-    // 
+    // "Deletes" a diagonal in the matrix, this means that the cells are cleared
+    // the diagonal is set to (-1, -1, -1) and the active flag is set to false, 
+    // the size of the dpDiagonals is the same (in fact it should always be the same)
     void DeleteDpDiagonal(int64_t xay);
     
     int64_t DiagonalNumber();
