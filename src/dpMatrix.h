@@ -2,15 +2,16 @@
 #define PARCOURS_DP_MATRIX_H
 
 #include "dpDiagonal.h"
+#include "band.h"
 
 template<class T, size_t sn>
 class DpMatrix {
 public:
-    DpMatrix(int64_t lX, int64_t lY);
+    DpMatrix<T, sn>(int64_t lx, int64_t ly, AnchorPairs& anchors, int64_t expansion);
+
+    DpMatrix<T, sn>(int64_t lx, int64_t ly);
 
     DpDiagonal<T, sn> *DpDiagonalGetter(int64_t xay);
-
-    //void Init(Band<T, sn> band):
 
     int64_t ActiveDiagonals();
 
@@ -31,12 +32,15 @@ public:
 
     T TotalProbability(std::function<double(HiddenState s, bool re)> StateValueGetter, bool forward);
 private:
-    std::vector<DpDiagonal<T, sn>> dpDiagonals;
     int64_t diagonal_number;
     int64_t active_diagonals;
     int64_t _state_number = sn;
     int64_t lX;
     int64_t lY;
+
+    std::vector<DpDiagonal<T, sn>> dpDiagonals;
+    Band<T, sn> band;
+
 };
 
 #endif // PARCOURS_DP_MATRIX_H

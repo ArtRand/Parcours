@@ -10,3 +10,8 @@ void st_uglyf(const char *string, ...) {
     vfprintf(stderr, string, ap);
     va_end(ap);
 }
+
+AnchorPairs EmptyAnchors() {
+    AnchorPairs anchors;
+    return anchors;
+}

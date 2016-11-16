@@ -147,6 +147,8 @@ struct DoTransitionBackward {
                       double eP, double tP);
 };
 
+typedef StateMachine5<nucleotide> FiveStateSymbolHmm;
+
 // Sets the state machine (HMM) emissions tables (GAPS and MATCHES) 
 // to sensible defaults. 
 EmissionsInitFunction<nucleotide> SetNucleotideEmissionsToDefauts();

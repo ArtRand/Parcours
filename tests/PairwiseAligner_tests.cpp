@@ -215,7 +215,6 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
     SECTION("DpMatrix main tests") {
         int64_t lX = 3;
         int64_t lY = 2;
-
         DpMatrix<double, fiveState> mat(lX, lY);
 
         REQUIRE(mat.ActiveDiagonals() == 0);
@@ -259,7 +258,7 @@ void CheckAlignedPairs(AlignedPairs pairs, int64_t lX, int64_t lY) {
     REQUIRE(!(compare_aligned_pair(_p, _p3)));
     REQUIRE(!(compare_aligned_pair(_p3, _p4)));
 
-    st_uglyf("got %lu pairs to check\n", pairs.size());
+    st_uglyf("got %lu pairs to check...", pairs.size());
 
     // check the validity of the pairs
     for (AlignedPair p : pairs) {
@@ -288,9 +287,10 @@ void CheckAlignedPairs(AlignedPairs pairs, int64_t lX, int64_t lY) {
         REQUIRE(!(compare_aligned_pair(pairs.at(i), p)));
         p = pairs.at(i);
     }
+    st_uglyf("OK\n");
 }
 
-TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
+TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment][debug]") {
     SymbolString sX = {{a, g, c, g}};
     SymbolString sY = {{a, g, t, t, c, g}};
     
@@ -300,7 +300,6 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
     StateMachine5<nucleotide> sM5;
     sM5.InitializeEmissions(SetNucleotideEmissionsToDefauts());
     
-    // TODO make this into an init function for DpMatrix
     DpMatrix<double, fiveState> forward_mat(lX, lY);
     DpMatrix<double, fiveState> backward_mat(lX, lY);
     
@@ -320,6 +319,7 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
         forward_mat.CreateDpDiagonal(d);
         backward_mat.CreateDpDiagonal(d);
     }
+
     forward_mat.DpDiagonalGetter(0)->InitValues(sM5.StartStateProbFcn());
     backward_mat.DpDiagonalGetter(backward_mat.DiagonalNumber())->InitValues(sM5.EndStateProbFcn());
 
@@ -341,10 +341,11 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
     REQUIRE(aligned_pairs.size() == 0);
     double threshold = 0.2;
     for (int64_t i = 1; i <= forward_mat.DiagonalNumber(); i++) {
-        PosteriorMatchProbabilities(i, total_forward_prob, 
-                                    threshold, match, 
-                                    forward_mat, backward_mat, 
-                                    aligned_pairs);
+        PairwiseAlignment<FiveStateSymbolHmm, fiveState>::
+            PosteriorMatchProbabilities(i, total_forward_prob, 
+                                        threshold, match, 
+                                        forward_mat, backward_mat, 
+                                        aligned_pairs);
     }
     REQUIRE(aligned_pairs.size() == 4);
     CheckAlignedPairs(aligned_pairs, lX, lY);   
@@ -367,21 +368,76 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
     REQUIRE(correct_pairs == pairs_no_probs);
 }
 
+TEST_CASE("Test PairwiseAlignment", "[debug]") {
+    SECTION("PairwiseAlignment works on simple sequences", "[debug]") {
+        SymbolString sX = {{a, g, c, g}};
+        SymbolString sY = {{a, g, t, t, c, g}}; 
+        FiveStateSymbolHmm hmm;
+        hmm.InitializeEmissions(SetNucleotideEmissionsToDefauts());
+        
+        AnchorPairs anchors;
+        anchors.emplace_back(0, 0);
+        anchors.emplace_back(1, 1);
+        anchors.emplace_back(3, 5); 
+        
+        AlignmentParameters p;
+        p.expansion = 2;
+        p.threshold = 0.2;
+        PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, sX, sY, anchors, p);
+        REQUIRE_THROWS_AS(aln.AlignedPairsGetter(), ParcoursException);
+        aln.Align(hmm, sX, sY);
+        AlignedPairs aligned_pairs = aln.AlignedPairsGetter();
+        REQUIRE(aligned_pairs.size() == 4);
+        CheckAlignedPairs(aligned_pairs, sX.size(), sY.size());   
+        // extracts just the aligned pair coordinates, leaves the posteriors
+        auto pairs_no_probs = [&aligned_pairs] () -> AnchorPairs {
+            AnchorPairs pairs;
+            for (auto p : aligned_pairs) {
+                pairs.emplace_back(std::get<1>(p), std::get<2>(p));
+            }
+            return pairs;
+        }();
+        // make sure that worked
+        REQUIRE(pairs_no_probs.size() == 4);
 
-TEST_CASE("Test GetAlignedPairs", "[alignment]") {
-    // generate some random (similar) sequences
-    std::string sX = RandomNucleotides(RandomInt(100, 200));
-    std::string sY = EvolveSequence(sX);
-    st_uglyf("Seq X : %s\nSeq Y : %s\n", sX.c_str(), sY.c_str());
+        AnchorPairs correct_pairs;
+        correct_pairs.emplace_back(0, 0);
+        correct_pairs.emplace_back(1, 1);
+        correct_pairs.emplace_back(2, 4);
+        correct_pairs.emplace_back(3, 5);
+        REQUIRE(correct_pairs == pairs_no_probs);    
+    }
 
-    AnchorPairs anchors = RandomAnchorPairs(sX.size(), sY.size());
+    SECTION("Test GetAlignedPairs", "[alignment]") {
+        // generate some random (similar) sequences
+        std::string sX = RandomNucleotides(RandomInt(100, 200));
+        std::string sY = EvolveSequence(sX);
+        st_uglyf("Seq X : %s\nSeq Y : %s\n", sX.c_str(), sY.c_str());
+
+        AnchorPairs anchors = RandomAnchorPairs(sX.size(), sY.size());
     
-    st_uglyf("Got %" PRIi64 " random anchor pairs\n", anchors.size());
+        st_uglyf("Got %" PRIi64 " random anchor pairs\n", anchors.size());
     
-    SymbolString SsX = SymbolStringFromString(sX);
-    SymbolString SsY = SymbolStringFromString(sY);
-    
-    
-    
+        SymbolString SsX = SymbolStringFromString(sX);
+        SymbolString SsY = SymbolStringFromString(sY);
+
+        AlignmentParameters p;
+        p.expansion = 20;
+        p.threshold = 0.01;
+
+        FiveStateSymbolHmm hmm;
+        hmm.InitializeEmissions(SetNucleotideEmissionsToDefauts());
+        
+        PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, SsX, SsY, anchors, p);
+
+        aln.Align(hmm, SsX, SsY);
+
+        AlignedPairs aligned_pairs = aln.AlignedPairsGetter();
+
+        CheckAlignedPairs(aligned_pairs, sX.size(), sY.size());
+    }
 }
+
+
+
 

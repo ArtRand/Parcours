@@ -12,6 +12,8 @@ class Band {
 public:
     Band(AnchorPairs anchors, int64_t lX, int64_t lY, int64_t expansion);
 
+    Band(int64_t lx, int64_t ly);
+
     ~Band() {};
 
     Band(Band& other) = default;

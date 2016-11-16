@@ -2,8 +2,7 @@
 #include "common.h"
 
 template<class T, size_t sn>
-Band<T, sn>::Band(std::vector<std::pair<int64_t, int64_t>> anchors, 
-                  int64_t lX, int64_t lY, int64_t expansion): index(0) {
+Band<T, sn>::Band(AnchorPairs anchors, int64_t lX, int64_t lY, int64_t expansion): index(0) {
     if (lX <= 0 || lY <= 0 || expansion % 2 != 0) {
         throw ParcoursException("[Band::Band] Illegal band construct input: \n"
                                 "lX: %" PRIi64 " lY: %" PRIi64 ", expansion %" PRIi64 "\n", lX, lY, expansion);
@@ -86,6 +85,9 @@ Band<T, sn>::Band(std::vector<std::pair<int64_t, int64_t>> anchors,
         }
     }
 }
+
+template<class T, size_t sn>
+Band<T, sn>::Band(int64_t lx, int64_t ly): Band(EmptyAnchors(), lx, ly, 0) {}
 
 template<class T, size_t sn>
 Diagonal Band<T, sn>::Next() {

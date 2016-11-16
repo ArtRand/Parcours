@@ -30,4 +30,6 @@ typedef std::vector<AlignedPair> AlignedPairs;
 
 void st_uglyf(const char *string, ...);
 
+AnchorPairs EmptyAnchors();
+
 #endif //PARCOURS_COMMON_H

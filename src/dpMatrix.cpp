@@ -1,9 +1,24 @@
 #include "dpMatrix.h"
 
 template<class T, size_t sn>
+DpMatrix<T, sn>::DpMatrix(int64_t lx, int64_t ly, 
+                          AnchorPairs& anchors, 
+                          int64_t expansion): diagonal_number(lx + ly), 
+                                              active_diagonals(0), 
+                                              lX(lx), lY(ly),
+                                              band(anchors, lx, ly, expansion) {
+    dpDiagonals.resize(lx + ly + 1);
+    
+    for (int64_t i = 0; i <= diagonal_number; i++) {
+        CreateDpDiagonal(band.Next());
+    }    
+}
+
+template<class T, size_t sn>
 DpMatrix<T, sn>::DpMatrix(int64_t lx, int64_t ly): diagonal_number(lx + ly), 
                                                    active_diagonals(0), 
-                                                   lX(lx), lY(ly) {
+                                                   lX(lx), lY(ly), 
+                                                   band(lx, ly) {
     dpDiagonals.resize(lx + ly + 1);
 }
 
