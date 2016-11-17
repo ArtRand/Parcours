@@ -63,9 +63,12 @@ public:
 
     std::set<int64_t> Sinks();
 
+    std::unordered_map<int64_t, std::deque<int64_t>> PathMap();
+
     std::vector<std::deque<int64_t>> AllPaths();
     
-    std::vector<SymbolString> ExtractSequences(const VertexPaths& vertex_paths);
+    std::unordered_map<int64_t, SymbolString> ExtractSequences(const std::unordered_map<int64_t, std::deque<int64_t>> paths);
+
     //friend HmmGraph;
 
     //friend Vertex;
@@ -78,8 +81,7 @@ private:
     //std::set<std::string> labels;
     //std::set<std::string *> seqs;
     //std::vector<int64_t> starts;
-    std::vector<std::deque<int64_t>> paths;
-    std::unordered_map<int64_t, uint64_t> path_lookup;  // (pathID, paths.at(path))  
+    std::unordered_map<int64_t, std::deque<int64_t>> paths;
     std::unordered_map<int64_t, double> path_scores;    // (pathID, score)
 
     // counters and flags

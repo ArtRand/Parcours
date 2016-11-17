@@ -229,27 +229,43 @@ std::set<int64_t> HmmGraph::Sinks() {
     return sinks;
 }
 
+std::unordered_map<int64_t, std::deque<int64_t>> HmmGraph::PathMap() { 
+    if (!initialized_paths) {
+        find_paths();
+        assert(nPaths >= 0);
+    }
+    return paths; 
+}
+
 std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
     if (!initialized_paths) {
         find_paths();
         assert(nPaths >= 0);
     }
-    return paths;
+    
+    std::vector<std::deque<int64_t>> vertex_paths;
+
+    for (auto kv : paths) {
+        vertex_paths.push_back(kv.second);
+    }
+
+    return vertex_paths;
 }
 
-std::vector<SymbolString> HmmGraph::ExtractSequences(const VertexPaths& paths) {
-    std::vector<SymbolString> path_sequences;
+std::unordered_map<int64_t, SymbolString> 
+HmmGraph::ExtractSequences(const std::unordered_map<int64_t, std::deque<int64_t>> paths) {
+    std::unordered_map<int64_t, SymbolString> path_sequences;
     for (auto& p : paths) {
         SymbolString S = [&] () {
             SymbolString s;
-            for (int64_t vId : p) {
+            for (int64_t vId : p.second) {
                 for (char b : *(VertexSequence(vId))) {
                     s.push_back(CharToSymbol(b));
                 }
             }
             return s;
         }();
-        path_sequences.push_back(S);
+        path_sequences[p.first] = S;
     }
     
     if (path_sequences.size() != paths.size()) throw ParcoursException("[HmmGraph::ExtractSequences]"
@@ -264,6 +280,7 @@ void HmmGraph::find_paths() {
         paths.clear();
         nPaths = -1;
     }
+
     // we're going to find all the paths from each source to each sink
     std::set<int64_t> sources = Sources();
     std::set<int64_t> sinks = Sinks();
@@ -313,7 +330,11 @@ void HmmGraph::find_paths() {
                     }
                 }
                 if (vId == source) {
-                    paths.insert(paths.end(), path_hash[source].begin(), path_hash[source].end());
+                    for (auto p : path_hash[source]) {
+                        if (nPaths < 0) nPaths = 0;
+                        paths[nPaths] = p;
+                        nPaths++;
+                    }
                     //st_uglyf("finished: \n");
                     //for (auto p : paths) {
                     //    for (auto v : p) std::cout << v << ", ";
