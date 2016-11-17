@@ -330,7 +330,7 @@ void HmmGraph::find_paths() {
                     }
                 }
                 if (vId == source) {
-                    for (auto p : path_hash[source]) {
+                    for (auto& p : path_hash[source]) {
                         if (nPaths < 0) nPaths = 0;
                         paths[nPaths] = p;
                         nPaths++;
