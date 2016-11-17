@@ -182,7 +182,7 @@ TEST_CASE("Basic Object Tests", "[HmmGraph]") {
         REQUIRE(G.Sources().size() == 1);
         REQUIRE(G.Sinks().size() == 1);
         
-        std::vector<std::deque<int64_t>> paths = G.AllPaths();
+        VertexPaths paths = G.AllPaths();
         
         std::deque<int64_t> p0 {0, 1, 3, 4, 6};
         std::deque<int64_t> p1 {0, 1, 3, 5, 6};

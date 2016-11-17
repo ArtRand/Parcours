@@ -22,4 +22,5 @@
 #include <cmath>
 #include <array>
 #include <tuple>
+#include <numeric>
 #endif //PARCOURS_STL_INCLUDES_H

@@ -63,11 +63,13 @@ bool DpDiagonal<T, sn>::CellCheck(int64_t xmy) {
 }
 
 template<class T, size_t sn> 
-void DpDiagonal<T, sn>::InitValues(std::function<double(HiddenState s, bool re)> StateValueGetter) {
+void DpDiagonal<T, sn>::InitValues(std::function<double(HiddenState s, bool re)> StateValueGetter, 
+                                   bool ragged_end) {
     for (int64_t i = diagonal.MinXmy(); i <= diagonal.MaxXmy(); i +=2) {
         assert(CellCheck(i));
         for (int64_t s = 0; s < _state_number; s++) {
-            CellSetter(i, static_cast<HiddenState>(s), StateValueGetter(static_cast<HiddenState>(s), false));
+            CellSetter(i, static_cast<HiddenState>(s), 
+                       StateValueGetter(static_cast<HiddenState>(s), ragged_end));
         }
     }
     active = true;

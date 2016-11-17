@@ -75,7 +75,7 @@ std::string EvolveSequence(const std::string& startSequence) {
             return seq;
         }();
     }
-    st_uglyf("EvolveSequence: made %i subs and %i indels\n", subs, indels);
+    //st_uglyf("EvolveSequence: made %i subs and %i indels\n", subs, indels);
     return seq;
 }
 

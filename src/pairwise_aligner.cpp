@@ -1,38 +1,68 @@
 #include "pairwise_aligner.h"
 
 template<class Hmm, size_t sn>
-PairwiseAlignment<Hmm, sn>::PairwiseAlignment(Hmm& hmm,SymbolString& sX, SymbolString& sY,
+PairwiseAlignment<Hmm, sn>::PairwiseAlignment(Hmm& hmm,SymbolString& sx, SymbolString& sy,
                                               AnchorPairs& anchors, AlignmentParameters p): 
-                                                  params(p),
-                                                  forward_matrix(sX.size(), sY.size(), 
-                                                                 anchors, p.expansion), 
-                                                  backward_matrix(sX.size(), sY.size(), 
-                                                                  anchors, p.expansion) {
-    if (static_cast<uint64_t>(forward_matrix.DiagonalNumber()) != (sX.size() + sY.size())) throw ParcoursException(
-            "[PairwiseAlignment::PairwiseAlignment] Forward matrix does not have correct diagonal number");
-    if (static_cast<uint64_t>(backward_matrix.DiagonalNumber()) != (sX.size() + sY.size())) throw ParcoursException(
-            "[PairwiseAlignment::PairwiseAlignment] Backward matrix does not have correct diagonal number");
-    if (forward_matrix.DiagonalNumber() != backward_matrix.DiagonalNumber()) throw ParcoursException(
-            "[PairwiseAlignment::PairwiseAlignment] Dp matrices don't have the same number of diagonals\n");
+                                                  model(hmm), sX(sx), sY(sy), params(p),
+                                                  forward_matrix(sx.size(), sy.size(), anchors, p.expansion), 
+                                                  backward_matrix(sx.size(), sy.size(), anchors, p.expansion) {
+    // check input and initialization of Dp matrices                                                     
+    if (static_cast<uint64_t>(forward_matrix.DiagonalNumber()) != (sX.size() + sY.size())) {
+        throw ParcoursException("[PairwiseAlignment::PairwiseAlignment] "
+            "Forward matrix does not have correct diagonal number");
+    } 
+    if (static_cast<uint64_t>(backward_matrix.DiagonalNumber()) != (sX.size() + sY.size())) {
+        throw ParcoursException("[PairwiseAlignment::PairwiseAlignment] "
+                "Backward matrix does not have correct diagonal number");
+    }
+    if (forward_matrix.DiagonalNumber() != backward_matrix.DiagonalNumber()) { 
+        throw ParcoursException("[PairwiseAlignment::PairwiseAlignment] "
+                "Dp matrices don't have the same number of diagonals\n");
+    }
     // initialize 
-    forward_matrix.DpDiagonalGetter(0)->InitValues(hmm.StartStateProbFcn());
-    backward_matrix.DpDiagonalGetter(backward_matrix.DiagonalNumber())->InitValues(hmm.EndStateProbFcn());
+    forward_matrix.DpDiagonalGetter(0)->InitValues(model.StartStateProbFcn());
+    backward_matrix.DpDiagonalGetter(backward_matrix.DiagonalNumber())->InitValues(model.EndStateProbFcn());
 }
 
 template<class Hmm, size_t sn>
-void PairwiseAlignment<Hmm, sn>::Align(Hmm& hmm, SymbolString& sX, SymbolString& sY) {
-    forward_algorithm(hmm, sX, sY);
-    backward_algorithm(hmm, sX, sY);
-    calculate_total_prob(hmm);
+void PairwiseAlignment<Hmm, sn>::Align() {
+    forward_algorithm(model, sX, sY);
+    backward_algorithm(model, sX, sY);
+    calculate_total_prob(model);
     posterior_match_probs();
     aligned = true;
 }   
 
 template<class Hmm, size_t sn>
 AlignedPairs& PairwiseAlignment<Hmm, sn>::AlignedPairsGetter() {
-    if (!aligned) throw ParcoursException("[PairwiseAlignment::AlignedPairsGetter] Alignment "
-                                          "not yet performed");
+    if (!aligned) Align();
     return aligned_pairs;
+}
+
+
+template<class Hmm, size_t sn>
+double PairwiseAlignment<Hmm, sn>::Score(bool ignore_gaps) {
+    if (!aligned) Align();
+    double total_score = [this] () -> double {
+        auto accumulator = [&] (double i, AlignedPair& p) {
+            return i + std::get<0>(p);
+        };
+        double s = std::accumulate(begin(aligned_pairs), end(aligned_pairs), 0.0, accumulator);
+        return s;
+    }();
+
+    auto score_ignoring_gaps = [this, &total_score] () -> double {
+        return 100.0 * total_score / ((double )aligned_pairs.size() * PAIR_ALIGNMENT_PROB_1);
+    };
+
+    auto score_with_gaps = [this, &total_score] () -> double {
+        int64_t lX = sX.size();
+        int64_t lY = sY.size();
+        int64_t lBoth = lX + lY;
+        return 100.0 * ((lBoth) == 0 ? 0 : (2.0 * total_score) / (lBoth * PAIR_ALIGNMENT_PROB_1)); 
+    };
+
+    return ignore_gaps ? score_ignoring_gaps() : score_with_gaps();
 }
 
 template<class Hmm, size_t sn>

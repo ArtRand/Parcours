@@ -6,27 +6,22 @@
 #define PARCOURS_HMM_GRAPH_H
 
 #include "stl_includes.h"
+#include "symbol_string.h"
 #include "common.h"
+
 #include "vertex.h"
 
 // intermediate graph structure
 class HmmGraph {
 public:
     // TODO move these to cpp, for consistency 
-    HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0) {};
+    HmmGraph();
     
     ~HmmGraph() {}; 
    
-    HmmGraph(HmmGraph& other) {
-        if (&other != this) copy_graph(*this, other);
-    }
+    HmmGraph(HmmGraph& other); 
 
-    HmmGraph& operator = (HmmGraph& other) {
-        if (&other != this) {
-            copy_graph(*this, other);
-        }
-        return *this;
-    }
+    HmmGraph& operator = (HmmGraph& other);
 
     HmmGraph(HmmGraph&& other) = default;
     
@@ -70,6 +65,7 @@ public:
 
     std::vector<std::deque<int64_t>> AllPaths();
     
+    std::vector<SymbolString> ExtractSequences(const VertexPaths& vertex_paths);
     //friend HmmGraph;
 
     //friend Vertex;
@@ -83,11 +79,14 @@ private:
     //std::set<std::string *> seqs;
     //std::vector<int64_t> starts;
     std::vector<std::deque<int64_t>> paths;
+    std::unordered_map<int64_t, uint64_t> path_lookup;  // (pathID, paths.at(path))  
+    std::unordered_map<int64_t, double> path_scores;    // (pathID, score)
 
     // counters and flags
     int64_t nVertices;
     int64_t nArcs;
     int64_t next_vertex_id;
+    int64_t nPaths;
     bool sorted = false;
     bool initialized_paths = false;
 

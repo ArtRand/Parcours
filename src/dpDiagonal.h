@@ -28,7 +28,7 @@ public:
 
     void CellSetter(int64_t xmy, HiddenState s, T value);
     
-    void InitValues(std::function<double(HiddenState s, bool re)> StateValueGetter);
+    void InitValues(std::function<double(HiddenState s, bool re)> StateValueGetter, bool ragged_end=false);
     
     T Dot(DpDiagonal& d2);
 

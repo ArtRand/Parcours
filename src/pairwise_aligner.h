@@ -18,11 +18,14 @@ class PairwiseAlignment {
 public:
     PairwiseAlignment<Hmm, sn>(Hmm& hmm, SymbolString&, SymbolString&, AnchorPairs&, AlignmentParameters);
     
-    void Align(Hmm& hmm, SymbolString& sX, SymbolString& sY);
+    void Align();
 
     AlignedPairs& AlignedPairsGetter();
     
-    double Score();
+    // Gives the average posterior match probability per base of the two sequences, 
+    // treating bases in indels as having 0 match probability, or optionally ignores
+    // the gaps
+    double Score(bool ignore_gaps);
 
     double TotalProbability();
 
@@ -32,6 +35,10 @@ public:
                                             DpMatrix<double, sn>& backward_mat, 
                                             AlignedPairs& aligned_pairs);
 private:
+    Hmm& model;
+    SymbolString& sX;
+    SymbolString& sY;
+
     AlignmentParameters params;
     AlignedPairs aligned_pairs;
     double total_probability = LOG_ZERO;
@@ -45,14 +52,5 @@ private:
     
 };
 
-// generates aligned pairs, which are tuples (prob, x, y) where prob is the posterior
-// probability that x is aligned to y: p(x<>y | x, y) = p(x, y, x<>y) / p(x, y)
-// populates `aligned_pairs`, does not check for `forward_mat` or `backward_mat` containing
-// actual alignment probabilities. All probabilities are multiplied by `PAIR_ALIGNMENT_PROB_1`
-//template<class T, size_t sn>
-//void PosteriorMatchProbabilities(int64_t xay, double total_probability, 
-//                                 double threshold, HiddenState match_state,
-//                                 DpMatrix<T, sn>& forward_mat, DpMatrix<T, sn>& backward_mat, 
-//                                 AlignedPairs& aligned_pairs);
 
 #endif // PARCOURS_PAIRWISE_ALIGNER_H

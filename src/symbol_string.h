@@ -14,6 +14,6 @@ typedef enum {
 typedef std::vector<Symbol> SymbolString;
 
 SymbolString SymbolStringFromString(std::string& seq);
-
+Symbol CharToSymbol(char b);
 
 #endif // PARCOURS_SYMBOL_STRING_H

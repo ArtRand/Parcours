@@ -258,7 +258,7 @@ void CheckAlignedPairs(AlignedPairs pairs, int64_t lX, int64_t lY) {
     REQUIRE(!(compare_aligned_pair(_p, _p3)));
     REQUIRE(!(compare_aligned_pair(_p3, _p4)));
 
-    st_uglyf("got %lu pairs to check...", pairs.size());
+    //st_uglyf("got %lu pairs to check...", pairs.size());
 
     // check the validity of the pairs
     for (AlignedPair p : pairs) {
@@ -287,10 +287,10 @@ void CheckAlignedPairs(AlignedPairs pairs, int64_t lX, int64_t lY) {
         REQUIRE(!(compare_aligned_pair(pairs.at(i), p)));
         p = pairs.at(i);
     }
-    st_uglyf("OK\n");
+    //st_uglyf("OK\n");
 }
 
-TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment][debug]") {
+TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
     SymbolString sX = {{a, g, c, g}};
     SymbolString sY = {{a, g, t, t, c, g}};
     
@@ -368,8 +368,8 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment][debug]") {
     REQUIRE(correct_pairs == pairs_no_probs);
 }
 
-TEST_CASE("Test PairwiseAlignment", "[debug]") {
-    SECTION("PairwiseAlignment works on simple sequences", "[debug]") {
+TEST_CASE("Test PairwiseAlignment", "[alignment]") {
+    SECTION("PairwiseAlignment works on simple sequences", "[alignment]") {
         SymbolString sX = {{a, g, c, g}};
         SymbolString sY = {{a, g, t, t, c, g}}; 
         FiveStateSymbolHmm hmm;
@@ -384,8 +384,6 @@ TEST_CASE("Test PairwiseAlignment", "[debug]") {
         p.expansion = 2;
         p.threshold = 0.2;
         PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, sX, sY, anchors, p);
-        REQUIRE_THROWS_AS(aln.AlignedPairsGetter(), ParcoursException);
-        aln.Align(hmm, sX, sY);
         AlignedPairs aligned_pairs = aln.AlignedPairsGetter();
         REQUIRE(aligned_pairs.size() == 4);
         CheckAlignedPairs(aligned_pairs, sX.size(), sY.size());   
@@ -408,33 +406,55 @@ TEST_CASE("Test PairwiseAlignment", "[debug]") {
         REQUIRE(correct_pairs == pairs_no_probs);    
     }
 
-    SECTION("Test GetAlignedPairs", "[alignment]") {
+    SECTION("PairwiseAlignment works on random related sequences", "[alignment]") {
         // generate some random (similar) sequences
-        std::string sX = RandomNucleotides(RandomInt(100, 200));
-        std::string sY = EvolveSequence(sX);
-        st_uglyf("Seq X : %s\nSeq Y : %s\n", sX.c_str(), sY.c_str());
+        for (int64_t t = 0; t < 100; t++) {
+            // TODO find solution to 0 length sequence
+            std::string sX = RandomNucleotides(RandomInt(1, 100));
+            std::string sY = EvolveSequence(sX);
+            //st_uglyf("Seq X : %s\nSeq Y : %s\n", sX.c_str(), sY.c_str());
 
-        AnchorPairs anchors = RandomAnchorPairs(sX.size(), sY.size());
+            AnchorPairs anchors = RandomAnchorPairs(sX.size(), sY.size());
     
-        st_uglyf("Got %" PRIi64 " random anchor pairs\n", anchors.size());
+            //st_uglyf("Got %" PRIi64 " random anchor pairs\n", anchors.size());
     
-        SymbolString SsX = SymbolStringFromString(sX);
-        SymbolString SsY = SymbolStringFromString(sY);
+            SymbolString SsX = SymbolStringFromString(sX);
+            SymbolString SsY = SymbolStringFromString(sY);
+    
+            AlignmentParameters p;
+            p.expansion = 20;
+            p.threshold = 0.1;
+    
+            FiveStateSymbolHmm hmm;
+            hmm.InitializeEmissions(SetNucleotideEmissionsToDefauts());
+        
+            PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, SsX, SsY, anchors, p);
+            
+            AlignedPairs aligned_pairs = aln.AlignedPairsGetter();
 
-        AlignmentParameters p;
-        p.expansion = 20;
-        p.threshold = 0.01;
+            CheckAlignedPairs(aligned_pairs, sX.size(), sY.size());
+        }    
+    }
 
+    SECTION("PairwiseAlignment scoring makes sense", "[alignment]") {
+        SymbolString sX = {{a, g, c, g}};
+        SymbolString sY = {{a, g, t, t, c, g}}; 
+        SymbolString sX2 = sX;
         FiveStateSymbolHmm hmm;
         hmm.InitializeEmissions(SetNucleotideEmissionsToDefauts());
-        
-        PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, SsX, SsY, anchors, p);
-
-        aln.Align(hmm, SsX, SsY);
-
-        AlignedPairs aligned_pairs = aln.AlignedPairsGetter();
-
-        CheckAlignedPairs(aligned_pairs, sX.size(), sY.size());
+        AlignmentParameters p;
+        p.expansion = 2;
+        p.threshold = 0.2;
+        AnchorPairs anchors;
+        PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, sX, sY, anchors, p);
+        PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln2(hmm, sX, sX2, anchors, p);
+        double ungapped_score = aln.Score(true);
+        double ungapped_score_same_seqs = aln2.Score(true);
+        double gapped_score = aln.Score(false);
+        double gapped_score_same_seqs = aln2.Score(false);
+        REQUIRE(ungapped_score < ungapped_score_same_seqs);
+        REQUIRE(gapped_score < gapped_score_same_seqs);
+        REQUIRE(std::abs(gapped_score_same_seqs - ungapped_score_same_seqs) < 0.001);
     }
 }
 

@@ -2,6 +2,19 @@
 
 #include "hmm_graph.h"
 
+HmmGraph::HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0), nPaths(-1) {  }
+
+HmmGraph::HmmGraph(HmmGraph& other) {
+    if (&other != this) copy_graph(*this, other);
+}
+
+HmmGraph& HmmGraph::operator = (HmmGraph& other) {
+    if (&other != this) {
+        copy_graph(*this, other);
+    }
+    return *this;
+}
+
 int64_t HmmGraph::AddVertex(const std::string *seq) {
     // get the next vertex id, a monotonically increasing int
     int64_t vId = next_vertex_id;
@@ -219,11 +232,38 @@ std::set<int64_t> HmmGraph::Sinks() {
 std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
     if (!initialized_paths) {
         find_paths();
+        assert(nPaths >= 0);
     }
     return paths;
 }
 
+std::vector<SymbolString> HmmGraph::ExtractSequences(const VertexPaths& paths) {
+    std::vector<SymbolString> path_sequences;
+    for (auto& p : paths) {
+        SymbolString S = [&] () {
+            SymbolString s;
+            for (int64_t vId : p) {
+                for (char b : *(VertexSequence(vId))) {
+                    s.push_back(CharToSymbol(b));
+                }
+            }
+            return s;
+        }();
+        path_sequences.push_back(S);
+    }
+    
+    if (path_sequences.size() != paths.size()) throw ParcoursException("[HmmGraph::ExtractSequences]"
+            " error collecting path sequences");
+
+    return path_sequences;
+}
+
 void HmmGraph::find_paths() {
+    if (!paths.empty()) {
+        st_uglyf("[HmmGraph::find_paths] clearing non-empty paths");
+        paths.clear();
+        nPaths = -1;
+    }
     // we're going to find all the paths from each source to each sink
     std::set<int64_t> sources = Sources();
     std::set<int64_t> sinks = Sinks();
@@ -284,6 +324,7 @@ void HmmGraph::find_paths() {
         }
     }
     initialized_paths = true;
+    nPaths = paths.size();
 }
 
 void HmmGraph::clear_graph() {
@@ -296,6 +337,7 @@ void HmmGraph::clear_graph() {
     paths.clear();
     nVertices = 0;
     nArcs = 0;
+    nPaths = -1;
     next_vertex_id = 0;
     sorted = false;
     initialized_paths = false;
