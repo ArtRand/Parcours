@@ -12,7 +12,7 @@ typedef struct _alignment_parameters {
 } AlignmentParameters;
 
 // SetType is the 'kind' of alignment (eg. nucleotide), sn is the state number (a 
-// way to specify the kind of HMM)
+// way to specify the kind of HMM) this is essentially equivalent to <set_size, sn>
 template<class Hmm, size_t sn>
 class PairwiseAlignment {
 public:

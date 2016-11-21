@@ -58,7 +58,7 @@ void HmmGraph::AddArc(int64_t fromId, int64_t toId) {
     vertex_map[toId]->AddInNeighbor(fromId);
     // update the from-vertex
     vertex_map[fromId]->AddOutNeighbor(toId);
-    // update sort status
+    // update counter and sort status
     nArcs += 1;
     sorted = false;
     return;
@@ -255,6 +255,9 @@ std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
 std::unordered_map<int64_t, SymbolString> 
 HmmGraph::ExtractSequences(const std::unordered_map<int64_t, std::deque<int64_t>> paths) {
     std::unordered_map<int64_t, SymbolString> path_sequences;
+    // TODO keep track of which vertex each base comes from, ie (vertex, offset), make a 
+    // vector that is the same length as the extracted sequence, and put it in a map that 
+    // can be used to look it up based on the path ID
     for (auto& p : paths) {
         SymbolString S = [&] () {
             SymbolString s;

@@ -67,7 +67,8 @@ public:
 
     std::vector<std::deque<int64_t>> AllPaths();
     
-    std::unordered_map<int64_t, SymbolString> ExtractSequences(const std::unordered_map<int64_t, std::deque<int64_t>> paths);
+    std::unordered_map<int64_t, SymbolString> 
+    ExtractSequences(const std::unordered_map<int64_t, std::deque<int64_t>> paths);
 
     //friend HmmGraph;
 
@@ -81,8 +82,8 @@ private:
     //std::set<std::string> labels;
     //std::set<std::string *> seqs;
     //std::vector<int64_t> starts;
-    std::unordered_map<int64_t, std::deque<int64_t>> paths;
-    std::unordered_map<int64_t, double> path_scores;    // (pathID, score)
+    std::unordered_map<int64_t, std::deque<int64_t>> paths;  // (pathID, score)
+    std::unordered_map<int64_t, double> path_scores;         // (pathID, score)
 
     // counters and flags
     int64_t nVertices;

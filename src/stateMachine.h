@@ -63,12 +63,16 @@ protected:
     int64_t _state_number = state_number;
 
     int64_t _set_size = set_size;
+
+    bool emissions_initialized = false;
 };
 
 template<size_t set_size>
 class StateMachine5 : public StateMachine<set_size, fiveState> {
 public:
     StateMachine5<set_size>();
+
+    StateMachine5<set_size>(EmissionsInitFunction<set_size> initFunc);
 
     double StartStateProb(HiddenState state, bool ragged_end);
     

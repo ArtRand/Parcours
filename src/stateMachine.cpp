@@ -36,6 +36,11 @@ StateMachine5<set_size>::StateMachine5() {
 }
 
 template<size_t set_size>
+StateMachine5<set_size>::StateMachine5(EmissionsInitFunction<set_size> initFunc): StateMachine5() {
+    InitializeEmissions(initFunc);
+}
+
+template<size_t set_size>
 int64_t StateMachine5<set_size>::StateNumber() const { return fiveState; }
 
 template<size_t set_size>
