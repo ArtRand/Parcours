@@ -52,5 +52,9 @@ private:
     
 };
 
+//typedef PairwiseAlignment<FiveStateSymbolHmm, fiveState> FiveStateSymbolAlignment;
+
+//template class PairwiseAlignment<FiveStateSymbolHmm, fiveState>;
+
 
 #endif // PARCOURS_PAIRWISE_ALIGNER_H

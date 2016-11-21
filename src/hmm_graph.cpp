@@ -253,6 +253,27 @@ std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
     return vertex_paths;
 }
 
+std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) { 
+    if (!normalized_path_scores && normalize) normalize_path_scores();
+    return path_scores; 
+}
+
+template<class Hmm, size_t sn>
+void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm, bool ignore_gaps) {
+    if (!initialized_paths) initialize_paths(true);
+    
+    if ((path_sequences.size() == 0) || (S.size() == 0)) return;
+
+    for (auto& kv : path_sequences) {
+        PairwiseAlignment<Hmm, sn> aln(hmm, S, kv.second, anchors, p);
+        //PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, S, kv.second, anchors, p);
+        path_scores[kv.first] = aln.Score(ignore_gaps);
+    }
+}
+
+template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, 
+                                                             FiveStateSymbolHmm& hmm, bool ignore_gaps);
+
 /*
 * Internal Methods
 */
@@ -395,6 +416,25 @@ void HmmGraph::find_paths(bool test_sort) {
         }
     }
     //assert(nPaths == paths.size());
+}
+
+void HmmGraph::normalize_path_scores() {
+    if (path_scores.empty()) throw ParcoursException("[HmmGraph::normalized_path_scores] path scores is empty");
+    if (normalized_path_scores) std::cerr << "[HmmGraph::normalized_path_scores] WARNING normalizing scores"
+                                             " that have already been normalized?" << std::endl;
+    auto total_path_prob = [this] () -> double {
+        double total = 0.0;
+        for (auto kv : path_scores) {
+            total += kv.second;
+        }
+        return total;
+    }();
+
+    for (auto& kv : path_scores) {
+        kv.second /= total_path_prob;
+    }
+
+    normalized_path_scores = true;
 }
 
 void HmmGraph::clear_graph() {

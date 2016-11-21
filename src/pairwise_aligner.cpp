@@ -129,8 +129,6 @@ void PairwiseAlignment<Hmm, sn>::posterior_match_probs() {
 
 template class PairwiseAlignment<FiveStateSymbolHmm, fiveState>;
 
-
-
 //template void PosteriorMatchProbabilities<double, fiveState>(
 //    int64_t xay, double total_probability, 
 //    double threshold, HiddenState match_state,

@@ -8,6 +8,7 @@
 #include "stl_includes.h"
 #include "symbol_string.h"
 #include "common.h"
+#include "pairwise_aligner.h"
 
 #include "vertex.h"
 
@@ -71,6 +72,16 @@ public:
     // removes the pathIDs
     std::vector<std::deque<int64_t>> AllPaths();
 
+    std::unordered_map<int64_t, double> PathScores(bool normalize=true);
+
+    // Aligns a sequence (SymbolString) to the path_sequences in the graph, updates the scores and (TODO) vertex
+    // probabilities 
+    template<class Hmm, size_t sn>
+    void Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, bool ignore_gaps);
+     
+    // Uses FiveStateSymbol-family alignment protocol
+    //void AlignFiveStateSymbol(SymbolString& S, AlignmentParameters p);
+
 private:
     // containers for graph representation
     std::unordered_map<int64_t, std::set<int64_t>> adjacentcy_list;
@@ -99,6 +110,7 @@ private:
     int64_t nPaths;
     bool sorted = false;
     bool initialized_paths = false;
+    bool normalized_path_scores = false;
 
     /*
      * Internal Methods
@@ -114,6 +126,7 @@ private:
     // modifies: paths, nPaths
     // calls:    TopologicalSort(), Sources(), Sinks(), Vertex->OutNeighbors(),
     void find_paths(bool test_sort=true);
+    void normalize_path_scores();
     void copy_graph(HmmGraph& orig, HmmGraph& other);
     void clear_graph();
 };
