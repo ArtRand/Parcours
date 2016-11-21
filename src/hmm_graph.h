@@ -80,7 +80,9 @@ public:
     // probabilities 
     template<class Hmm, size_t sn>
     void Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, bool ignore_gaps);
-     
+
+    template<class Hmm, size_t sn>
+    void Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, bool ignore_gaps);
     // Uses FiveStateSymbol-family alignment protocol
     //void AlignFiveStateSymbol(SymbolString& S, AlignmentParameters p);
 

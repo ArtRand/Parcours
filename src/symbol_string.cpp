@@ -24,6 +24,23 @@ Symbol CharToSymbol(char b) {
     }
 }
 
+char SymbolToChar(Symbol s) {
+    switch (s) {
+        case a:
+            return 'A';
+        case c:
+            return 'C';
+        case g:
+            return 'G';
+        case t:
+            return 'T';
+        case n:
+            return 'N';
+        default:
+            throw ParcoursException("[SymbolStringFromString] illegal base %c\n", s);
+    }
+}
+
 SymbolString SymbolStringFromString(std::string& seq) {
     SymbolString S;
 
@@ -54,4 +71,13 @@ SymbolString SymbolStringFromString(std::string& seq) {
     }
 
     return S;
+}
+
+std::string StringFromSymbolString(SymbolString seq) {
+    std::string seq_string;
+    seq_string.reserve(seq.size());
+    for (Symbol s : seq) {
+        seq_string += SymbolToChar(s);
+    }
+    return seq_string;
 }

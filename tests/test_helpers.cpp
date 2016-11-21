@@ -55,7 +55,7 @@ std::string EvolveSequence(const std::string& startSequence) {
     //Do substitutions
     int subs = 0, indels = 0;
     for (uint64_t i = 0; i < seq.size(); i++) {
-        if (RandomDouble() > 0.8) {
+        if (RandomDouble() > 0.9) {
             char random_base = RandomNucleotides(1).at(0);
             seq.at(i) = random_base;
             subs++;
@@ -63,7 +63,7 @@ std::string EvolveSequence(const std::string& startSequence) {
     }
     
     //Do indels
-    while (RandomDouble() > 0.2) {
+    while (RandomDouble() > 0.1) {
         std::string to_replace = RandomNucleotides(RandomInt(2, 4));
         std::string replacement = RandomNucleotides(RandomInt(0, 10));
         seq = [&seq, &to_replace, &replacement, &indels] () -> std::string {  

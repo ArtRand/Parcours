@@ -276,8 +276,21 @@ void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters&
     }
 }
 
+template<class Hmm, size_t sn>
+void HmmGraph::Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, 
+                     AlignmentParameters& p, Hmm& hmm, bool ignore_gaps) {
+    for (auto s : vS) {
+        Align<Hmm, sn>(s, anchors, p, hmm, ignore_gaps);
+    }
+}
+
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, 
                                                              FiveStateSymbolHmm& hmm, bool ignore_gaps);
+
+template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::vector<SymbolString>& S, AnchorPairs& anchors, 
+                                                             AlignmentParameters& p, FiveStateSymbolHmm& hmm, 
+                                                             bool ignore_gaps);
+
 
 /*
 * Internal Methods
