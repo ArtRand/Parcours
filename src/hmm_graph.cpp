@@ -253,6 +253,11 @@ std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
     return vertex_paths;
 }
 
+int64_t HmmGraph::NumberOfPaths() {
+    if (!initialized_paths) initialize_paths();
+    return nPaths;
+}
+
 std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) { 
     if (!normalized_path_scores && normalize) normalize_path_scores();
     return path_scores; 

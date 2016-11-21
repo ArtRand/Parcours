@@ -72,6 +72,8 @@ public:
     // removes the pathIDs
     std::vector<std::deque<int64_t>> AllPaths();
 
+    int64_t NumberOfPaths();
+
     std::unordered_map<int64_t, double> PathScores(bool normalize=true);
 
     // Aligns a sequence (SymbolString) to the path_sequences in the graph, updates the scores and (TODO) vertex
