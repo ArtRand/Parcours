@@ -2,6 +2,8 @@
 
 #include "hmm_graph.h"
 
+// Public Methods
+
 HmmGraph::HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0), nPaths(-1) {  }
 
 HmmGraph::HmmGraph(HmmGraph& other) {
@@ -230,18 +232,17 @@ std::set<int64_t> HmmGraph::Sinks() {
 }
 
 std::unordered_map<int64_t, std::deque<int64_t>> HmmGraph::PathMap() { 
-    if (!initialized_paths) {
-        find_paths();
-        assert(nPaths >= 0);
-    }
+    if (!initialized_paths) initialize_paths(true);
     return paths; 
 }
 
+std::unordered_map<int64_t, SymbolString> HmmGraph::PathSequences() {
+    if (!initialized_paths) initialize_paths(true);
+    return path_sequences;
+}
+
 std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
-    if (!initialized_paths) {
-        find_paths();
-        assert(nPaths >= 0);
-    }
+    if (!initialized_paths) initialize_paths(true);
     
     std::vector<std::deque<int64_t>> vertex_paths;
 
@@ -252,32 +253,79 @@ std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
     return vertex_paths;
 }
 
-std::unordered_map<int64_t, SymbolString> 
-HmmGraph::ExtractSequences(const std::unordered_map<int64_t, std::deque<int64_t>> paths) {
-    std::unordered_map<int64_t, SymbolString> path_sequences;
-    // TODO keep track of which vertex each base comes from, ie (vertex, offset), make a 
-    // vector that is the same length as the extracted sequence, and put it in a map that 
-    // can be used to look it up based on the path ID
-    for (auto& p : paths) {
+/*
+* Internal Methods
+*/
+
+void HmmGraph::initialize_paths(bool double_check) {
+    auto check = [this] () -> bool {
+        assert(initialized_paths);
+        if (nPaths < 0) return false;                                        // not initialized
+        if (nPaths != static_cast<int>(paths.size())) return false;          // missing paths or bad accounting
+        if (paths.size() != path_sequences.size()) return false;             // don't have correct # sequences
+        for (auto& kv : path_sequences) {
+            int64_t pId    = kv.first;
+            SymbolString s = kv.second;
+            if (s.size() != sequence_to_vertex[pId].size()) return false;    // don't have vertex mapping correct
+            else continue;
+        }
+        return true;
+    };
+
+    if (initialized_paths) {
+        bool ok = check();
+        if (!ok) throw ParcoursException("[HmmGraph::initialize_paths] check not OK\n");
+        else return;
+    }
+    
+    try {
+        find_paths(true);
+        extract_sequences();
+        initialized_paths = true;
+    } catch (ParcoursException& e) {
+        std::cerr << e.what() << "\n";
+    }
+    
+    if (double_check) { 
+        try {
+            assert(initialized_paths);
+            initialize_paths(false);
+        } catch (ParcoursException& e) {
+            std::cerr << e.what() << "\n";
+        }
+    }
+}
+
+void HmmGraph::extract_sequences() {
+    if (paths.empty()) return;
+    for (auto& kv : paths) {  // (pathID, vertex_path)
         SymbolString S = [&] () {
             SymbolString s;
-            for (int64_t vId : p.second) {
+            // loop over the vertices, and convert the sequences into SymbolStrings, 
+            // keep track of the offset and vertexID to map the SymbolString sequence
+            // back to the vertex_sequence base it came from 
+            for (int64_t vId : kv.second) {
+                int64_t offset = 0;
                 for (char b : *(VertexSequence(vId))) {
                     s.push_back(CharToSymbol(b));
+                    sequence_to_vertex[kv.first].emplace_back(vId, offset++);
                 }
             }
             return s;
         }();
-        path_sequences[p.first] = S;
+        path_sequences[kv.first] = S;
+        if (S.size() != sequence_to_vertex[kv.first].size()) throw ParcoursException(""
+                "[HmmGraph::extract_sequences] sequence %" PRIi64 " length not equal to vertex_to_sequence "
+                "pairs length, expected %lu == %lu\n", kv.first, S.size(), sequence_to_vertex[kv.first].size());
     }
     
-    if (path_sequences.size() != paths.size()) throw ParcoursException("[HmmGraph::ExtractSequences]"
+    if (path_sequences.size() != paths.size()) throw ParcoursException("[HmmGraph::extract_sequences]"
             " error collecting path sequences");
 
-    return path_sequences;
+    return;
 }
 
-void HmmGraph::find_paths() {
+void HmmGraph::find_paths(bool test_sort) {
     if (!paths.empty()) {
         st_uglyf("[HmmGraph::find_paths] clearing non-empty paths");
         paths.clear();
@@ -288,8 +336,7 @@ void HmmGraph::find_paths() {
     std::set<int64_t> sources = Sources();
     std::set<int64_t> sinks = Sinks();
     
-    // preliminary checks
-    TopologicalSort(true);
+    TopologicalSort(test_sort);
     
     // reverse the vertex list, we're going to go from sink to source
     std::vector<int64_t> reverse_node_list = vertex_list;
@@ -347,8 +394,7 @@ void HmmGraph::find_paths() {
             }
         }
     }
-    initialized_paths = true;
-    nPaths = paths.size();
+    //assert(nPaths == paths.size());
 }
 
 void HmmGraph::clear_graph() {
