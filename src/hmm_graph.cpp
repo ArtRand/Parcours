@@ -264,32 +264,36 @@ std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) {
 }
 
 template<class Hmm, size_t sn>
-void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm, bool ignore_gaps) {
+void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm) {
     if (!initialized_paths) initialize_paths(true);
     
     if ((path_sequences.size() == 0) || (S.size() == 0)) return;
 
     for (auto& kv : path_sequences) {
         PairwiseAlignment<Hmm, sn> aln(hmm, S, kv.second, anchors, p);
-        //PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, S, kv.second, anchors, p);
-        path_scores[kv.first] = aln.Score(ignore_gaps);
+        aln.Align();
+        AlignedPairs aln_pairs = aln.AlignedPairsGetter();
+        path_aligned_pairs[kv.first] = aln_pairs;
+        path_scores[kv.first] = aln.Score(p.ignore_gaps);
     }
 }
 
 template<class Hmm, size_t sn>
-void HmmGraph::Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, 
-                     AlignmentParameters& p, Hmm& hmm, bool ignore_gaps) {
+void HmmGraph::Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm) {
     for (auto s : vS) {
-        Align<Hmm, sn>(s, anchors, p, hmm, ignore_gaps);
+        Align<Hmm, sn>(s, anchors, p, hmm);
     }
 }
 
-template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, 
-                                                             FiveStateSymbolHmm& hmm, bool ignore_gaps);
+template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(SymbolString& S, 
+                                                             AnchorPairs& anchors, 
+                                                             AlignmentParameters& p, 
+                                                             FiveStateSymbolHmm& hmm);
 
-template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::vector<SymbolString>& S, AnchorPairs& anchors, 
-                                                             AlignmentParameters& p, FiveStateSymbolHmm& hmm, 
-                                                             bool ignore_gaps);
+template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::vector<SymbolString>& S, 
+                                                             AnchorPairs& anchors, 
+                                                             AlignmentParameters& p, 
+                                                             FiveStateSymbolHmm& hmm);
 
 
 /*

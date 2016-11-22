@@ -117,6 +117,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
         AlignmentParameters p;
         p.expansion = 2;
         p.threshold = 0.1;
+        p.ignore_gaps = false;
         
         AnchorPairs anchors = EmptyAnchors();
 
@@ -142,7 +143,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
         REQUIRE(max_id == 0);
 
         // test internal alignment routine
-        G.Align<FiveStateSymbolHmm, fiveState>(path1_read, anchors, p, hmm, false);
+        G.Align<FiveStateSymbolHmm, fiveState>(path1_read, anchors, p, hmm);
         REQUIRE(G.PathScores(false) == scores);
 
         // test normalization 
@@ -162,7 +163,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
     }
     SECTION("Correct path becomes most likely after reads are aligned to it") {
         int64_t incorrect = 0;
-        int64_t test_cases = 100;
+        int64_t test_cases = 50;
         for (int64_t test = 0; test < test_cases; test++) {
             // setup the graph and get the path sequences
             std::string a = RandomNucleotides(RandomInt(10, 20));
@@ -202,7 +203,8 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
 
             AlignmentParameters p;
             p.expansion = 6;
-            p.threshold = 0.2;
+            p.threshold = 0.4;
+            p.ignore_gaps = false;
     
             AnchorPairs anchors = EmptyAnchors();
 
@@ -224,7 +226,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
             }
             
             // align them to the graph's paths
-            G.Align<FiveStateSymbolHmm, fiveState>(reads, anchors, p, hmm, false);
+            G.Align<FiveStateSymbolHmm, fiveState>(reads, anchors, p, hmm);
             
             auto most_probable_path = [&] () -> int64_t {
                 double max_score = LOG_ZERO;

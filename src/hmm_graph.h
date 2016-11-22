@@ -1,5 +1,5 @@
 //
-// Created by Arthur Rand on 10/24/16
+// 
 //
 
 #ifndef PARCOURS_HMM_GRAPH_H
@@ -9,7 +9,6 @@
 #include "symbol_string.h"
 #include "common.h"
 #include "pairwise_aligner.h"
-
 #include "vertex.h"
 
 // intermediate graph structure
@@ -76,15 +75,16 @@ public:
 
     std::unordered_map<int64_t, double> PathScores(bool normalize=true);
 
-    // Aligns a sequence (SymbolString) to the path_sequences in the graph, updates the scores and (TODO) vertex
-    // probabilities 
+    // Aligns a sequence (SymbolString) to the path_sequences in the graph
     template<class Hmm, size_t sn>
-    void Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, bool ignore_gaps);
+    void Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm);
 
+    // TODO
     template<class Hmm, size_t sn>
-    void Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, bool ignore_gaps);
-    // Uses FiveStateSymbol-family alignment protocol
-    //void AlignFiveStateSymbol(SymbolString& S, AlignmentParameters p);
+    void Align(std::string& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm);
+    // calls the above function for each SymbolString in the vector, continually updates
+    template<class Hmm, size_t sn>
+    void Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm);
 
 private:
     // containers for graph representation
@@ -104,8 +104,12 @@ private:
     // is the position that pair corresponds to in the path sequence, the vectros must
     // be the same length as the sequences.
     std::unordered_map<int64_t, std::vector<std::pair<int64_t, int64_t>>> sequence_to_vertex;
-    // keep track of path scores, not sure how to incorperate HMMs into this yet
+    // contains path scores as scored by pairwise aligner, contains the score for the entire 
+    // path sequence, given all the reads that have been aligned
     std::unordered_map<int64_t, double> path_scores;  // (pathID, score)
+    // contains the aligned pairs organized by vertex, in this case the aligned pairs are organized
+    // by the y-coordinate TODO TODO left off here!!
+    std::unordered_map<int64_t, AlignedPairs> path_aligned_pairs;
 
     // counters and flags 
     int64_t nVertices;

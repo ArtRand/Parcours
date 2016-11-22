@@ -422,7 +422,7 @@ TEST_CASE("Test PairwiseAlignment", "[alignment]") {
             SymbolString SsY = SymbolStringFromString(sY);
     
             AlignmentParameters p;
-            p.expansion = 20;
+            p.expansion = 6;
             p.threshold = 0.1;
     
             FiveStateSymbolHmm hmm;

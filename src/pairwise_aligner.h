@@ -9,6 +9,7 @@
 typedef struct _alignment_parameters {
     double threshold;
     int64_t expansion;
+    bool ignore_gaps;
 } AlignmentParameters;
 
 // SetType is the 'kind' of alignment (eg. nucleotide), sn is the state number (a 
