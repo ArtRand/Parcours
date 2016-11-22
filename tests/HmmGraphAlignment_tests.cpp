@@ -241,10 +241,10 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
                 return mId;
             }();
             if (most_probable_path != choose_path) {
-                st_uglyf("INCORRECT most probable path\ngot %lld expected %lld\n", most_probable_path, choose_path);
-                st_uglyf("exp: %s\nobs: %s\n", path_sequence_string.c_str(), 
-                        StringFromSymbolString(G.PathSequences()[most_probable_path]).c_str());
-                st_uglyf("exp: %f\nobs: %f\n", G.PathScores()[choose_path], G.PathScores()[most_probable_path]);
+                //st_uglyf("INCORRECT most probable path\ngot %lld expected %lld\n", most_probable_path, choose_path);
+                //st_uglyf("exp: %s\nobs: %s\n", path_sequence_string.c_str(), 
+                //        StringFromSymbolString(G.PathSequences()[most_probable_path]).c_str());
+                //st_uglyf("exp: %f\nobs: %f\n", G.PathScores()[choose_path], G.PathScores()[most_probable_path]);
                 incorrect++;
             }
         }
