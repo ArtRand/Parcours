@@ -201,7 +201,8 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
         REQUIRE(max_id == 0);
 
         // test internal alignment routine
-        G.Align<FiveStateSymbolHmm, fiveState>(path1_read, anchors, p, hmm);
+        std::string read_string = StringFromSymbolString(path1_read);
+        G.Align<FiveStateSymbolHmm, fiveState>(read_string, p, hmm);
         REQUIRE(G.PathScores(false) == scores);
 
         // test normalization 

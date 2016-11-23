@@ -268,51 +268,70 @@ std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) {
 std::unordered_map<int64_t, GraphAlignedPairs> HmmGraph::PathAlignedPairs() { return path_aligned_pairs; }
 
 template<class Hmm, size_t sn>
-void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm) {
+void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm, 
+                     bool get_aligned_pairs) {
     if (!initialized_paths) initialize_paths(true);
     
     if ((path_sequences.size() == 0) || (S.size() == 0)) return;
 
     for (auto& kv : path_sequences) {
         PairwiseAlignment<Hmm, sn> aln(hmm, S, kv.second, anchors, p);
-        aln.Align();
-        AlignedPairs aln_pairs = aln.AlignedPairsGetter();
-        // translate the aligned pairs to reflect the graph coordinates
-        GraphAlignedPairs g_pairs = translate_pairwise_aligned_pairs(aln_pairs, kv.first);
-        assert(g_pairs.size() == aln_pairs.size());
-        // add these aligned pairs to the rest for this path
-        path_aligned_pairs[kv.first].insert(end(path_aligned_pairs[kv.first]), begin(g_pairs), end(g_pairs));
+        // perform the alignment and get the aligned pairs, if requested
+        if (get_aligned_pairs) {
+            AlignedPairs aln_pairs = aln.AlignedPairsGetter();
+            // translate the aligned pairs to reflect the graph coordinates
+            GraphAlignedPairs g_pairs = translate_pairwise_aligned_pairs(aln_pairs, kv.first);
+            assert(g_pairs.size() == aln_pairs.size());
+            // add these aligned pairs to the rest for this path
+            path_aligned_pairs[kv.first].insert(end(path_aligned_pairs[kv.first]), begin(g_pairs), end(g_pairs));
+        }
         path_scores[kv.first] += aln.Score(p.ignore_gaps);
     }
 }
 
 template<class Hmm, size_t sn>
-void HmmGraph::Align(std::string& sx, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm) {
+void HmmGraph::Align(std::string& sx, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, bool get_pairs) {
     auto S = SymbolStringFromString(sx);
-    Align<Hmm, sn>(S, anchors, p, hmm);
+    Align<Hmm, sn>(S, anchors, p, hmm, get_pairs);
 }
 
 template<class Hmm, size_t sn>
-void HmmGraph::Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm) {
+void HmmGraph::Align(std::string& sx, AlignmentParameters& p, Hmm& hmm, bool get_pairs) {
+    auto S = SymbolStringFromString(sx);
+    AnchorPairs anchors = EmptyAnchors();
+    Align<Hmm, sn>(S, anchors, p, hmm, get_pairs);
+}
+
+template<class Hmm, size_t sn>
+void HmmGraph::Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
+                     bool get_pairs) {
     for (auto s : vS) {
-        Align<Hmm, sn>(s, anchors, p, hmm);
+        Align<Hmm, sn>(s, anchors, p, hmm, get_pairs);
     }
 }
 
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(SymbolString& S, 
                                                              AnchorPairs& anchors, 
                                                              AlignmentParameters& p, 
-                                                             FiveStateSymbolHmm& hmm);
+                                                             FiveStateSymbolHmm& hmm, 
+                                                             bool get_aligned_pairs);
 
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::string& sx, 
                                                              AnchorPairs& anchors, 
                                                              AlignmentParameters& p, 
-                                                             FiveStateSymbolHmm& hmm);
+                                                             FiveStateSymbolHmm& hmm, 
+                                                             bool get_aligned_pairs);
+
+template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::string& sx, 
+                                                             AlignmentParameters& p, 
+                                                             FiveStateSymbolHmm& hmm, 
+                                                             bool get_aligned_pairs);
 
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::vector<SymbolString>& S, 
                                                              AnchorPairs& anchors, 
                                                              AlignmentParameters& p, 
-                                                             FiveStateSymbolHmm& hmm);
+                                                             FiveStateSymbolHmm& hmm, 
+                                                             bool get_aligned_pairs);
 
 
 /*

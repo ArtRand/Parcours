@@ -83,15 +83,22 @@ public:
     // returns the map of pathID to aligned pairs
     std::unordered_map<int64_t, GraphAlignedPairs> PathAlignedPairs();
     // Aligns a sequence (SymbolString) to the path_sequences in the graph
+    // modifies: path_scores, path_aligned_pairs (iff get_pairs==True)
+    // calls: PairwiseAlignment::Score() PairwiseAlignment::AlignedPairsGetter()
     template<class Hmm, size_t sn>
-    void Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm);
-
-    // TODO not implemented
+    void Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
+               bool get_pairs=true);
     template<class Hmm, size_t sn>
-    void Align(std::string& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm);
-    // calls the above function for each SymbolString in the vector, continually updates scores..?
+    void Align(std::string& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
+               bool get_pairs=true);
+    // if you don't want to use anchors, good for small alignments
     template<class Hmm, size_t sn>
-    void Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm);
+    void Align(std::string& S, AlignmentParameters& p, Hmm& hmm, bool get_pairs=true);
+    // calls the above function for each SymbolString in the vector, continually updates scores and 
+    // adds to path_aligned_pairs
+    template<class Hmm, size_t sn>
+    void Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
+               bool get_pairs=true);
 
 private:
     // containers for graph representation
@@ -142,6 +149,10 @@ private:
     void find_paths(bool test_sort=true);
     void normalize_path_scores();
     GraphAlignedPairs translate_pairwise_aligned_pairs(AlignedPairs& pairs, int64_t pathId);
+    // TODO 
+    // - Sort paths by score
+    // - Flattened GraphAlignedPairs
+    // - GraphAlignedPairs to CIGAR?
     void copy_graph(HmmGraph& orig, HmmGraph& other);
     void clear_graph();
 };
