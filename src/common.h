@@ -25,8 +25,12 @@ typedef enum _statemachine_type {
 
 
 typedef std::vector<std::pair<int64_t, int64_t>> AnchorPairs;
-typedef std::tuple<double, int64_t, int64_t> AlignedPair;
+typedef std::tuple<double, int64_t, int64_t> AlignedPair;  // (prob, x, y)
 typedef std::vector<AlignedPair> AlignedPairs;
+
+// a type for storing aligned pairs to a graph structure (prob, x, (vertex, offset))
+typedef std::tuple<double, int64_t, std::pair<int64_t, int64_t>> GraphAlignedPair; 
+typedef std::vector<GraphAlignedPair> GraphAlignedPairs;
 
 typedef std::vector<std::deque<int64_t>> VertexPaths;
 

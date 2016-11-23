@@ -6,6 +6,8 @@
 
 HmmGraph::HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0), nPaths(-1) {  }
 
+HmmGraph::~HmmGraph() {  }
+
 HmmGraph::HmmGraph(HmmGraph& other) {
     if (&other != this) copy_graph(*this, other);
 }
@@ -263,6 +265,8 @@ std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) {
     return path_scores; 
 }
 
+std::unordered_map<int64_t, GraphAlignedPairs> HmmGraph::PathAlignedPairs() { return path_aligned_pairs; }
+
 template<class Hmm, size_t sn>
 void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm) {
     if (!initialized_paths) initialize_paths(true);
@@ -273,9 +277,19 @@ void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters&
         PairwiseAlignment<Hmm, sn> aln(hmm, S, kv.second, anchors, p);
         aln.Align();
         AlignedPairs aln_pairs = aln.AlignedPairsGetter();
-        path_aligned_pairs[kv.first] = aln_pairs;
-        path_scores[kv.first] = aln.Score(p.ignore_gaps);
+        // translate the aligned pairs to reflect the graph coordinates
+        GraphAlignedPairs g_pairs = translate_pairwise_aligned_pairs(aln_pairs, kv.first);
+        assert(g_pairs.size() == aln_pairs.size());
+        // add these aligned pairs to the rest for this path
+        path_aligned_pairs[kv.first].insert(end(path_aligned_pairs[kv.first]), begin(g_pairs), end(g_pairs));
+        path_scores[kv.first] += aln.Score(p.ignore_gaps);
     }
+}
+
+template<class Hmm, size_t sn>
+void HmmGraph::Align(std::string& sx, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm) {
+    auto S = SymbolStringFromString(sx);
+    Align<Hmm, sn>(S, anchors, p, hmm);
 }
 
 template<class Hmm, size_t sn>
@@ -286,6 +300,11 @@ void HmmGraph::Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, Alignm
 }
 
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(SymbolString& S, 
+                                                             AnchorPairs& anchors, 
+                                                             AlignmentParameters& p, 
+                                                             FiveStateSymbolHmm& hmm);
+
+template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::string& sx, 
                                                              AnchorPairs& anchors, 
                                                              AlignmentParameters& p, 
                                                              FiveStateSymbolHmm& hmm);
@@ -458,6 +477,24 @@ void HmmGraph::normalize_path_scores() {
 
     normalized_path_scores = true;
 }
+
+GraphAlignedPairs HmmGraph::translate_pairwise_aligned_pairs(AlignedPairs& pairs, int64_t pathId) {
+    // loop over the aligned pairs and replace the y-corrdinate with the vertex offset pair 
+    GraphAlignedPairs g_pairs;
+    g_pairs.reserve(pairs.size());
+    auto translate = [this, pathId] (AlignedPair& aln_pair) -> GraphAlignedPair {
+        double p = std::get<0>(aln_pair);
+        int64_t x = std::get<1>(aln_pair);
+        int64_t y = std::get<2>(aln_pair);
+        std::pair<int64_t, int64_t> v_coord = sequence_to_vertex[pathId].at(y);
+        return std::make_tuple(p, x, v_coord);
+    };
+
+    std::transform(begin(pairs), end(pairs), std::back_inserter(g_pairs), translate);
+
+    return g_pairs;
+}
+
 
 void HmmGraph::clear_graph() {
     if (vertex_list.size() > 0 || nVertices > 0 || nArcs > 0) {

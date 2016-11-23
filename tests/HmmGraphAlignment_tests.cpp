@@ -1,7 +1,6 @@
 // HmmGraphAlignment tests
 //
 
-#include "catch.hpp"
 #include "test_helpers.h"
 #include "hmm_graph.h"
 #include "pairwise_aligner.h"
@@ -65,6 +64,65 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
         REQUIRE(std::find(begin(path_sequences), end(path_sequences), s2) != end(path_sequences));
         REQUIRE(std::find(begin(path_sequences), end(path_sequences), s3) != end(path_sequences));
         REQUIRE(std::find(begin(path_sequences), end(path_sequences), s4) != end(path_sequences));
+    }
+    SECTION("Multipath alignment gets correct aligned pairs in simple example") {
+        std::string s1 ("AG");
+        std::string s2 ("TT");
+        std::string s3 ("CG");
+
+        HmmGraph G = HmmGraph();
+
+        int64_t vid0 = G.AddVertex(&s1);
+        int64_t vid1 = G.AddVertex(&s2);
+        int64_t vid2 = G.AddVertex(&s3);
+
+        G.AddArc(vid0, vid1);
+        G.AddArc(vid1, vid2);
+        G.AddArc(vid0, vid2);
+
+        std::string read ("AGCG");
+
+        AnchorPairs anchors = EmptyAnchors();
+
+        AlignmentParameters p;
+        p.expansion = 2;
+        p.threshold = 0.2;
+        p.ignore_gaps = false;
+
+        FiveStateSymbolHmm hmm(SetNucleotideEmissionsToDefauts());
+
+        G.Align<FiveStateSymbolHmm, fiveState>(read, anchors, p, hmm);
+        
+        auto pairs = G.PathAlignedPairs();
+        
+        REQUIRE(pairs.size() == G.NumberOfPaths());
+
+        for (auto kv : pairs) {
+            REQUIRE(kv.second.size() == 4);
+            // for checking pairs, delete when annoying to look at
+            //st_uglyf("Path %lld aligned pairs\n", kv.first);
+            //for (auto p : kv.second) {
+            //    st_uglyf("x: %lld vertex: %lld offset: %lld p: %f\n", 
+            //            std::get<1>(p), std::get<2>(p).first, std::get<2>(p).second, std::get<0>(p));
+            //}
+        }
+
+        auto aln_pairs_no_probs = [&pairs] () -> std::set<std::tuple<int64_t, int64_t, int64_t>> {
+            std::set<std::tuple<int64_t, int64_t, int64_t>> set_of_pairs;
+            for (auto kv : pairs) {
+                for (auto p : kv.second) {
+                    int64_t x      = std::get<1>(p);
+                    int64_t vid    = std::get<2>(p).first;
+                    int64_t offset = std::get<2>(p).second;
+                    auto t = std::make_tuple(x, vid, offset);
+                    set_of_pairs.insert(t);
+                }
+            }
+            return set_of_pairs;
+        }();
+
+        REQUIRE(aln_pairs_no_probs.size() == 4);
+
     }
     SECTION("Sequences align to graph paths correctly when read matches exactly") {
         // setup the graph and get the path sequences
@@ -203,23 +261,23 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
 
             AlignmentParameters p;
             p.expansion = 6;
-            p.threshold = 0.4;
+            p.threshold = 0.2;
             p.ignore_gaps = false;
     
             AnchorPairs anchors = EmptyAnchors();
 
             int64_t choose_path = RandomInt(0, G.NumberOfPaths() - 1);
 
-            // generate reads from one of the paths
+            // generate reads from one of the paths (simulate 15X coverage)
             SymbolString path_sequence = G.PathSequences()[choose_path];
             std::string path_sequence_string = StringFromSymbolString(path_sequence);
             REQUIRE(path_sequence_string.size() == path_sequence.size());
             std::vector<SymbolString> reads;
-            for (int64_t i = 0; i < 15; i++) {
+            for (int64_t i = 0; i < 20; i++) {
                 SymbolString path_read = [&] () {
-                    //std::string r = EvolveSequence(path_sequence_string);
-                    //SymbolString s = SymbolStringFromString(r);
-                    SymbolString s = SymbolStringFromString(path_sequence_string);
+                    std::string r = EvolveSequence(path_sequence_string);
+                    SymbolString s = SymbolStringFromString(r);
+                    //SymbolString s = SymbolStringFromString(path_sequence_string);
                     return s;
                 }();
                 reads.push_back(path_read);

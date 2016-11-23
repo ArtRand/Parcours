@@ -3,7 +3,6 @@
 //
 
 #include "hmm_graph.h"
-#include "catch.hpp"
 #include "test_helpers.h"
 
 TEST_CASE("Basic Object Tests", "[HmmGraph]") {
