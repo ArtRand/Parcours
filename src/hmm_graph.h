@@ -100,6 +100,13 @@ public:
     void Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
                bool get_pairs=true);
 
+    // Call the above template methods with implemented models for convenience
+    void AlignWithFiveStateSymbolHmm(std::string& S, AnchorPairs& anchors, 
+                                     AlignmentParameters& p, bool get_pairs=true);
+
+    void AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& p, bool get_pairs=true);
+
+
 private:
     // containers for graph representation
     std::unordered_map<int64_t, std::set<int64_t>> adjacentcy_list;

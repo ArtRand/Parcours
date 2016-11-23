@@ -333,6 +333,17 @@ template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::vector<SymbolS
                                                              FiveStateSymbolHmm& hmm, 
                                                              bool get_aligned_pairs);
 
+void HmmGraph::AlignWithFiveStateSymbolHmm(std::string& S, AnchorPairs& anchors, AlignmentParameters& p, 
+                                           bool get_pairs) {
+    FiveStateSymbolHmm hmm(SetNucleotideEmissionsToDefauts());
+    Align<FiveStateSymbolHmm, fiveState>(S, anchors, p, hmm, get_pairs);
+}
+
+void HmmGraph::AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& p, bool get_pairs) {
+    FiveStateSymbolHmm hmm(SetNucleotideEmissionsToDefauts());
+    Align<FiveStateSymbolHmm, fiveState>(S, p, hmm, get_pairs);
+}
+
 
 /*
 * Internal Methods
