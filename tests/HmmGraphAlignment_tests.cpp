@@ -224,6 +224,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
     SECTION("Correct path becomes most likely after reads are aligned to it") {
         int64_t incorrect = 0;
         int64_t test_cases = 50;
+        #pragma omp parallel for
         for (int64_t test = 0; test < test_cases; test++) {
             // setup the graph and get the path sequences
             std::string a = RandomNucleotides(RandomInt(10, 20));
@@ -307,8 +308,12 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
                 //st_uglyf("exp: %s\nobs: %s\n", path_sequence_string.c_str(), 
                 //        StringFromSymbolString(G.PathSequences()[most_probable_path]).c_str());
                 //st_uglyf("exp: %f\nobs: %f\n", G.PathScores()[choose_path], G.PathScores()[most_probable_path]);
+                #pragma omp critical (incorrect) 
+                {
                 incorrect++;
+                }
             }
+            st_uglyf("finished test %" PRIi64 "\n", test);
         }
         double accuracy = 100.0 - (((double )incorrect / (double )test_cases) * 100);
         //st_uglyf("incorrect %lld of %lld, accuracy %f\n", incorrect, test_cases, accuracy);

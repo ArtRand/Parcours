@@ -529,10 +529,10 @@ GraphAlignedPairs HmmGraph::translate_pairwise_aligned_pairs(AlignedPairs& pairs
     GraphAlignedPairs g_pairs;
     g_pairs.reserve(pairs.size());
     auto translate = [this, pathId] (AlignedPair& aln_pair) -> GraphAlignedPair {
-        double p = std::get<0>(aln_pair);
-        int64_t x = std::get<1>(aln_pair);
-        int64_t y = std::get<2>(aln_pair);
-        std::pair<int64_t, int64_t> v_coord = sequence_to_vertex[pathId].at(y);
+        double p     = std::get<0>(aln_pair);
+        int64_t x    = std::get<1>(aln_pair);
+        int64_t y    = std::get<2>(aln_pair);
+        auto v_coord = sequence_to_vertex[pathId].at(y);
         return std::make_tuple(p, x, v_coord);
     };
 
