@@ -219,6 +219,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
         }
 
         REQUIRE(G.PathScores(true) == scores);
+        REQUIRE(G.MaxScorePath() == max_id);
     }
     SECTION("Correct path becomes most likely after reads are aligned to it") {
         int64_t incorrect = 0;

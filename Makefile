@@ -5,7 +5,7 @@ else
 endif
 #CXX=clang++
 #CXX=g++-5
-CFLAGS=-Wall -Wextra -std=c++11
+CFLAGS=-Wall -Wextra -std=c++11 
 
 OBJ_DIR=obj
 UNITTEST_OBJ_DIR=$(OBJ_DIR)/unittest

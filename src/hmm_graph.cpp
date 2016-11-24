@@ -4,7 +4,7 @@
 
 // Public Methods
 
-HmmGraph::HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0), nPaths(-1) {  }
+HmmGraph::HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0), nPaths(-1), most_probable_path(-1) {  }
 
 HmmGraph::~HmmGraph() {  }
 
@@ -265,17 +265,19 @@ std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) {
     return path_scores; 
 }
 
+int64_t HmmGraph::MaxScorePath() { return most_probable_path; }
+
 std::unordered_map<int64_t, GraphAlignedPairs> HmmGraph::PathAlignedPairs() { return path_aligned_pairs; }
 
 template<class Hmm, size_t sn>
 void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm, 
-                     bool get_aligned_pairs) {
+                     bool get_aligned_pairs, bool ragged_end) {
     if (!initialized_paths) initialize_paths(true);
     
     if ((path_sequences.size() == 0) || (S.size() == 0)) return;
 
     for (auto& kv : path_sequences) {
-        PairwiseAlignment<Hmm, sn> aln(hmm, S, kv.second, anchors, p);
+        PairwiseAlignment<Hmm, sn> aln(hmm, S, kv.second, anchors, p, ragged_end);
         // perform the alignment and get the aligned pairs, if requested
         if (get_aligned_pairs) {
             AlignedPairs aln_pairs = aln.AlignedPairsGetter();
@@ -290,23 +292,24 @@ void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters&
 }
 
 template<class Hmm, size_t sn>
-void HmmGraph::Align(std::string& sx, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, bool get_pairs) {
+void HmmGraph::Align(std::string& sx, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
+                     bool get_pairs, bool ragged_end) {
     auto S = SymbolStringFromString(sx);
-    Align<Hmm, sn>(S, anchors, p, hmm, get_pairs);
+    Align<Hmm, sn>(S, anchors, p, hmm, get_pairs, ragged_end);
 }
 
 template<class Hmm, size_t sn>
-void HmmGraph::Align(std::string& sx, AlignmentParameters& p, Hmm& hmm, bool get_pairs) {
+void HmmGraph::Align(std::string& sx, AlignmentParameters& p, Hmm& hmm, bool get_pairs, bool ragged_end) {
     auto S = SymbolStringFromString(sx);
     AnchorPairs anchors = EmptyAnchors();
-    Align<Hmm, sn>(S, anchors, p, hmm, get_pairs);
+    Align<Hmm, sn>(S, anchors, p, hmm, get_pairs, ragged_end);
 }
 
 template<class Hmm, size_t sn>
 void HmmGraph::Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
-                     bool get_pairs) {
+                     bool get_pairs, bool ragged_end) {
     for (auto s : vS) {
-        Align<Hmm, sn>(s, anchors, p, hmm, get_pairs);
+        Align<Hmm, sn>(s, anchors, p, hmm, get_pairs, ragged_end);
     }
 }
 
@@ -314,34 +317,39 @@ template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(SymbolString& S,
                                                              AnchorPairs& anchors, 
                                                              AlignmentParameters& p, 
                                                              FiveStateSymbolHmm& hmm, 
-                                                             bool get_aligned_pairs);
+                                                             bool get_aligned_pairs, 
+                                                             bool ragged_end);
 
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::string& sx, 
                                                              AnchorPairs& anchors, 
                                                              AlignmentParameters& p, 
                                                              FiveStateSymbolHmm& hmm, 
-                                                             bool get_aligned_pairs);
+                                                             bool get_aligned_pairs, 
+                                                             bool ragged_end);
 
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::string& sx, 
                                                              AlignmentParameters& p, 
                                                              FiveStateSymbolHmm& hmm, 
-                                                             bool get_aligned_pairs);
+                                                             bool get_aligned_pairs, 
+                                                             bool ragged_end);
 
 template void HmmGraph::Align<FiveStateSymbolHmm, fiveState>(std::vector<SymbolString>& S, 
                                                              AnchorPairs& anchors, 
                                                              AlignmentParameters& p, 
                                                              FiveStateSymbolHmm& hmm, 
-                                                             bool get_aligned_pairs);
+                                                             bool get_aligned_pairs, 
+                                                             bool ragged_end);
 
 void HmmGraph::AlignWithFiveStateSymbolHmm(std::string& S, AnchorPairs& anchors, AlignmentParameters& p, 
-                                           bool get_pairs) {
+                                           bool get_pairs, bool ragged_end) {
     FiveStateSymbolHmm hmm(SetNucleotideEmissionsToDefauts());
-    Align<FiveStateSymbolHmm, fiveState>(S, anchors, p, hmm, get_pairs);
+    Align<FiveStateSymbolHmm, fiveState>(S, anchors, p, hmm, get_pairs, ragged_end);
 }
 
-void HmmGraph::AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& p, bool get_pairs) {
+void HmmGraph::AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& p, 
+                                           bool get_pairs, bool ragged_end) {
     FiveStateSymbolHmm hmm(SetNucleotideEmissionsToDefauts());
-    Align<FiveStateSymbolHmm, fiveState>(S, p, hmm, get_pairs);
+    Align<FiveStateSymbolHmm, fiveState>(S, p, hmm, get_pairs, ragged_end);
 }
 
 
@@ -501,9 +509,17 @@ void HmmGraph::normalize_path_scores() {
         return total;
     }();
 
+    double max_prob_score = LOG_ZERO;
+
     for (auto& kv : path_scores) {
         kv.second /= total_path_prob;
+        if (kv.second > max_prob_score) {
+            max_prob_score = kv.second;
+            most_probable_path = kv.first;
+        }
     }
+
+    assert(most_probable_path >= 0);
 
     normalized_path_scores = true;
 }

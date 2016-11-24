@@ -2,7 +2,7 @@
 
 template<class Hmm, size_t sn>
 PairwiseAlignment<Hmm, sn>::PairwiseAlignment(Hmm& hmm,SymbolString& sx, SymbolString& sy,
-                                              AnchorPairs& anchors, AlignmentParameters p): 
+                                              AnchorPairs& anchors, AlignmentParameters p, bool ragged_end): 
                                                   model(hmm), sX(sx), sY(sy), params(p),
                                                   forward_matrix(sx.size(), sy.size(), anchors, p.expansion), 
                                                   backward_matrix(sx.size(), sy.size(), anchors, p.expansion) {
@@ -20,8 +20,8 @@ PairwiseAlignment<Hmm, sn>::PairwiseAlignment(Hmm& hmm,SymbolString& sx, SymbolS
                 "Dp matrices don't have the same number of diagonals\n");
     }
     // initialize 
-    forward_matrix.DpDiagonalGetter(0)->InitValues(model.StartStateProbFcn());
-    backward_matrix.DpDiagonalGetter(backward_matrix.DiagonalNumber())->InitValues(model.EndStateProbFcn());
+    forward_matrix.DpDiagonalGetter(0)->InitValues(model.StartStateProbFcn(), ragged_end);
+    backward_matrix.DpDiagonalGetter(backward_matrix.DiagonalNumber())->InitValues(model.EndStateProbFcn(), ragged_end);
 }
 
 template<class Hmm, size_t sn>

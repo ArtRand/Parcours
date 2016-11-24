@@ -17,7 +17,8 @@ typedef struct _alignment_parameters {
 template<class Hmm, size_t sn>
 class PairwiseAlignment {
 public:
-    PairwiseAlignment<Hmm, sn>(Hmm& hmm, SymbolString&, SymbolString&, AnchorPairs&, AlignmentParameters);
+    PairwiseAlignment<Hmm, sn>(Hmm& hmm, SymbolString&, SymbolString&, AnchorPairs&, AlignmentParameters, 
+                               bool ragged_end=false);
     
     void Align();
 

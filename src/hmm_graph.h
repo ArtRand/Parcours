@@ -77,6 +77,7 @@ public:
 
     std::unordered_map<int64_t, double> PathScores(bool normalize=true);
     
+    int64_t MaxScorePath();
     /*
      * Alignment Methods
      */
@@ -87,24 +88,26 @@ public:
     // calls: PairwiseAlignment::Score() PairwiseAlignment::AlignedPairsGetter()
     template<class Hmm, size_t sn>
     void Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
-               bool get_pairs=true);
+               bool get_pairs=true, bool ragged_end=false);
+    // with string
     template<class Hmm, size_t sn>
     void Align(std::string& S, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
-               bool get_pairs=true);
+               bool get_pairs=true, bool ragged_end=false);
     // if you don't want to use anchors, good for small alignments
     template<class Hmm, size_t sn>
-    void Align(std::string& S, AlignmentParameters& p, Hmm& hmm, bool get_pairs=true);
+    void Align(std::string& S, AlignmentParameters& p, Hmm& hmm, bool get_pairs=true, bool ragged_end=false);
     // calls the above function for each SymbolString in the vector, continually updates scores and 
     // adds to path_aligned_pairs
     template<class Hmm, size_t sn>
     void Align(std::vector<SymbolString>& vS, AnchorPairs& anchors, AlignmentParameters& p, Hmm& hmm, 
-               bool get_pairs=true);
+               bool get_pairs=true, bool ragged_end=false);
 
     // Call the above template methods with implemented models for convenience
     void AlignWithFiveStateSymbolHmm(std::string& S, AnchorPairs& anchors, 
-                                     AlignmentParameters& p, bool get_pairs=true);
+                                     AlignmentParameters& p, bool get_pairs=true, bool ragged_end=false);
 
-    void AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& p, bool get_pairs=true);
+    void AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& p, 
+                                     bool get_pairs=true, bool ragged_end=false);
 
 
 private:
@@ -136,6 +139,7 @@ private:
     int64_t nArcs;
     int64_t next_vertex_id;
     int64_t nPaths;
+    int64_t most_probable_path;
     bool sorted = false;
     bool initialized_paths = false;
     bool normalized_path_scores = false;
