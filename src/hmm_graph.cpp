@@ -265,7 +265,10 @@ std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) {
     return path_scores; 
 }
 
-int64_t HmmGraph::MaxScorePath() { return most_probable_path; }
+int64_t HmmGraph::MaxScorePath() { 
+    if (!normalized_path_scores) normalize_path_scores();
+    return most_probable_path; 
+}
 
 std::unordered_map<int64_t, GraphAlignedPairs> HmmGraph::PathAlignedPairs() { return path_aligned_pairs; }
 

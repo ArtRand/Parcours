@@ -271,7 +271,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
 
             int64_t choose_path = RandomInt(0, G.NumberOfPaths() - 1);
 
-            // generate reads from one of the paths (simulate 15X coverage)
+            // generate reads from one of the paths (simulate ~15X coverage)
             SymbolString path_sequence = G.PathSequences()[choose_path];
             std::string path_sequence_string = StringFromSymbolString(path_sequence);
             REQUIRE(path_sequence_string.size() == path_sequence.size());
