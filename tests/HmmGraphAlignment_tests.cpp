@@ -224,7 +224,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
     SECTION("Correct path becomes most likely after reads are aligned to it") {
         int64_t incorrect = 0;
         int64_t test_cases = 50;
-        #pragma omp parallel for
+        #pragma omp parallel for num_threads(4)
         for (int64_t test = 0; test < test_cases; test++) {
             // setup the graph and get the path sequences
             std::string a = RandomNucleotides(RandomInt(10, 20));
@@ -313,7 +313,6 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
                 incorrect++;
                 }
             }
-            st_uglyf("finished test %" PRIi64 "\n", test);
         }
         double accuracy = 100.0 - (((double )incorrect / (double )test_cases) * 100);
         //st_uglyf("incorrect %lld of %lld, accuracy %f\n", incorrect, test_cases, accuracy);
