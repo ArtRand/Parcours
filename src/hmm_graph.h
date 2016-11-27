@@ -82,7 +82,7 @@ public:
      * Alignment Methods
      */
     // returns the map of pathID to aligned pairs
-    std::unordered_map<int64_t, GraphAlignedPairs> PathAlignedPairs();
+    std::unordered_map<int64_t, GraphAlignedPairs>& PathAlignedPairs();
     // Aligns a sequence (SymbolString) to the path_sequences in the graph
     // modifies: path_scores, path_aligned_pairs (iff get_pairs==True)
     // calls: PairwiseAlignment::Score() PairwiseAlignment::AlignedPairsGetter()

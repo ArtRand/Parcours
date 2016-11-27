@@ -270,7 +270,9 @@ int64_t HmmGraph::MaxScorePath() {
     return most_probable_path; 
 }
 
-std::unordered_map<int64_t, GraphAlignedPairs> HmmGraph::PathAlignedPairs() { return path_aligned_pairs; }
+std::unordered_map<int64_t, GraphAlignedPairs>& HmmGraph::PathAlignedPairs() { 
+    return path_aligned_pairs; 
+}
 
 template<class Hmm, size_t sn>
 void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm, 
