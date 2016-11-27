@@ -1,9 +1,12 @@
 // HmmGraphAlignment tests
 //
-#include "omp.h"
 #include "test_helpers.h"
 #include "hmm_graph.h"
 #include "pairwise_aligner.h"
+
+#ifdef _OPENMP
+#include "omp.h"
+#endif
 
 TEST_CASE("Multipath Alignment test", "[alignment]") {
     SECTION("Graph extracts all path sequences correctly") {
@@ -223,8 +226,12 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
     }
     SECTION("Correct path becomes most likely after reads are aligned to it") {
         int64_t incorrect = 0;
+#ifdef _OPENMP
         int64_t test_cases = 40;
-        #pragma omp parallel for num_threads(4) reduction(+:incorrect) 
+#else
+        int64_t test_cases = 5;
+#endif
+        #pragma omp parallel for reduction(+:incorrect) 
         for (int64_t test = 0; test < test_cases; test++) {
             // setup the graph and get the path sequences
             std::string a = RandomNucleotides(RandomInt(10, 20));
@@ -313,10 +320,9 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
                 incorrect++;
                 //}
             }
-            st_uglyf("thread %d finished test %lld\n", omp_get_thread_num(), test);
         }
         double accuracy = 100.0 - (((double )incorrect / (double )test_cases) * 100);
-        st_uglyf("incorrect %lld of %lld, accuracy %f\n", incorrect, test_cases, accuracy);
+        //st_uglyf("incorrect %lld of %lld, accuracy %f\n", incorrect, test_cases, accuracy);
         REQUIRE(accuracy >= 95.0);
     }
 }

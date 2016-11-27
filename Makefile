@@ -1,8 +1,8 @@
 CFLAGS=-Wall -Wextra -std=c++11 
 
 ifeq ($(shell uname -s),Darwin)
-	CXX=g++
-	CFLAGS += -fopenmp
+	CXX=clang++
+	#CFLAGS += -fopenmp
 else
 	CXX=g++
 	CFLAGS += -fopenmp
