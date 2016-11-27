@@ -5,7 +5,7 @@
 
 #include "diagonal.h"
 #include "common.h"
-#include "logAdd.h"
+#include "log_add.h"
 
 template<class T, size_t sn>
 class DpDiagonal {

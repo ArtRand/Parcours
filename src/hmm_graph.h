@@ -134,7 +134,8 @@ private:
     // contains the aligned pairs for each path, should accumulate as more reads are aligned 
     std::unordered_map<int64_t, GraphAlignedPairs> path_aligned_pairs;
 
-    // counters and flags 
+    // counters and flags
+    //
     int64_t nVertices;
     int64_t nArcs;
     int64_t next_vertex_id;
@@ -144,9 +145,8 @@ private:
     bool initialized_paths = false;
     bool normalized_path_scores = false;
 
-    /*
-     * Internal Methods
-     */
+    // Internal Methods
+    //
     // fills the `paths`, `path_sequences`, and `sequence_to_vertex` containers throws an exception 
     // iff doule check is true and results from the called methods don't check ok, will automatically
     // check if `initialized_paths` is already true

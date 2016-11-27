@@ -1,7 +1,7 @@
 // Pairwise aligner tests
 //
 
-#include "logAdd.h"
+#include "log_add.h"
 #include "diagonal.h"
 #include "band.h"
 #include "common.h"

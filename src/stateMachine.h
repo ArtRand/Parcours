@@ -5,7 +5,7 @@
 #include "common.h"
 #include "dpMatrix.h"
 #include "dpDiagonal.h"
-#include "logAdd.h"
+#include "log_add.h"
 #include "symbol_string.h"
 
 // TransitionFunction, is used to designate forward or backward calculations 
