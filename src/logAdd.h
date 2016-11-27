@@ -6,6 +6,6 @@
 
 #define LOG_ZERO (double )-std::numeric_limits<double>::infinity()
 
-double logAdd(double x, double y);
+double LogAdd(double x, double y);
 
 #endif

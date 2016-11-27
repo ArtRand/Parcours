@@ -208,8 +208,8 @@ void StateMachine5<set_size>::DpDiagonalCalculation(DpDiagonal<double, fiveState
     // walk from min xmy to max xmy
     while (xmy <= curr->DiagonalGetter().MaxXmy()) {
         // get the indices of the things
-        Symbol x = get_symbol(cX, curr->DiagonalGetter().Xay(), xmy, diagonal_XCoordinate);
-        Symbol y = get_symbol(cY, curr->DiagonalGetter().Xay(), xmy, diagonal_YCoordinate);        
+        Symbol x = get_symbol(cX, curr->DiagonalGetter().Xay(), xmy, Diagonal::XCoordinate);
+        Symbol y = get_symbol(cY, curr->DiagonalGetter().Xay(), xmy, Diagonal::YCoordinate);        
 
         // do the calculation
         double *current = curr->CellGetter(xmy);
@@ -237,13 +237,13 @@ void StateMachine5<set_size>::DpDiagonalCalculation(int64_t xay, DpMatrix<double
 void DoTransitionForward::operator () (double *from_cells, double *to_cells, 
                                        HiddenState from, HiddenState to, 
                                        double eP, double tP) {
-    to_cells[to] = logAdd(to_cells[to], from_cells[from] + (eP + tP));
+    to_cells[to] = LogAdd(to_cells[to], from_cells[from] + (eP + tP));
 }
 
 void DoTransitionBackward::operator () (double *from_cells, double *to_cells, 
                                         HiddenState from, HiddenState to, 
                                         double eP, double tP) {
-    from_cells[from] = logAdd(from_cells[from], to_cells[to] + (eP + tP));
+    from_cells[from] = LogAdd(from_cells[from], to_cells[to] + (eP + tP));
 }
 
 EmissionsInitFunction<nucleotide> SetNucleotideEmissionsToDefauts() {

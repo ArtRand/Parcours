@@ -27,6 +27,10 @@ public:
 
     std::string ToString();
     
+    static int64_t XCoordinate(int64_t, int64_t);
+
+    static int64_t YCoordinate(int64_t, int64_t);
+
     bool operator == (Diagonal& other) const;
 
 private:
@@ -35,8 +39,8 @@ private:
     int64_t xmyR;
 };
 
-int64_t diagonal_XCoordinate(int64_t, int64_t);
+//int64_t diagonal_XCoordinate(int64_t, int64_t);
 
-int64_t diagonal_YCoordinate(int64_t, int64_t);
+//int64_t diagonal_YCoordinate(int64_t, int64_t);
 
 #endif // PARCOURS_DIAGONAL_H

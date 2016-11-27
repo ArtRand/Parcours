@@ -152,20 +152,20 @@ private:
     // check if `initialized_paths` is already true
     // modifies: paths, path_sequences, sequence_to_vertex
     // calls: find_paths(), extract_sequences()
-    void initialize_paths(bool double_check=true);  
-    void extract_sequences();
+    void initializePaths(bool double_check=true);  
+    void extractSequences();
     // test_sort is passed to TopologicalSort, if `false` the find_paths will not throw an exceptiion
     // modifies: paths, nPaths
     // calls:    TopologicalSort(), Sources(), Sinks(), Vertex->OutNeighbors(),
-    void find_paths(bool test_sort=true);
-    void normalize_path_scores();
-    GraphAlignedPairs translate_pairwise_aligned_pairs(AlignedPairs& pairs, int64_t pathId);
+    void findPaths(bool test_sort=true);
+    void normalizePathScores();
+    GraphAlignedPairs translatePairwiseAlignedPairs(AlignedPairs& pairs, int64_t pathId);
     // TODO 
     // - Sort paths by score
     // - Flattened GraphAlignedPairs
     // - GraphAlignedPairs to CIGAR?
-    void copy_graph(HmmGraph& orig, HmmGraph& other);
-    void clear_graph();
+    void copyGraph(HmmGraph& orig, HmmGraph& other);
+    void clearGraph();
 };
 
 #endif

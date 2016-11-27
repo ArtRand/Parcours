@@ -46,10 +46,13 @@ private:
     double total_probability = LOG_ZERO;
     DpMatrix<double, sn> forward_matrix;
     DpMatrix<double, sn> backward_matrix;
-    void forward_algorithm(Hmm&, SymbolString&, SymbolString&);
-    void backward_algorithm(Hmm&, SymbolString&, SymbolString&);
-    void posterior_match_probs();
-    void calculate_total_prob(Hmm&);
+
+    // Internal Methods
+    //
+    void forwardAlgorithm(Hmm&, SymbolString&, SymbolString&);
+    void backwardAlgorithm(Hmm&, SymbolString&, SymbolString&);
+    void posteriorMatchProbs();
+    void calculateTotalProbability(Hmm&);
     bool aligned = false;
     
 };

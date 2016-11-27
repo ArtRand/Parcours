@@ -38,13 +38,13 @@ bool Diagonal::operator == (Diagonal& other) const {
     return xay == other.xay && xmyL == other.xmyL && xmyR == other.xmyR;
 }
 
-int64_t diagonal_XCoordinate(int64_t ay, int64_t my) {
+int64_t Diagonal::XCoordinate(int64_t ay, int64_t my) {
     if ((ay + my) % 2 != 0) throw ParcoursException(
             "[Diagonal::XCoordinate]: Illegal input xay %" PRIi64 "xmy %" PRIi64 "\n", ay, my);
     return (ay + my) / 2;
 }
 
-int64_t diagonal_YCoordinate(int64_t ay, int64_t my) {
+int64_t Diagonal::YCoordinate(int64_t ay, int64_t my) {
     if ((ay + my) % 2 != 0) throw ParcoursException(
             "[Diagonal::YCoordinate]: Illegal input xay %" PRIi64 "xmy %" PRIi64 "\n", ay, my);
     return (ay - my) / 2;

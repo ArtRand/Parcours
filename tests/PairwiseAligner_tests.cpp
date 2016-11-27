@@ -20,8 +20,8 @@ TEST_CASE("Diagonal Tests", "[PairwiseAligner]") {
     REQUIRE(d.MinXmy() == xL - yL);
     REQUIRE(d.MaxXmy() == xU - yU);
     REQUIRE(d.Width() == ((xU - yU - (xL - yL)) / 2 + 1));
-    REQUIRE(diagonal_XCoordinate(xL + yL, xL - yL) == xL);
-    REQUIRE(diagonal_YCoordinate(xL + yL, xL - yL) == yL);
+    REQUIRE(Diagonal::XCoordinate(xL + yL, xL - yL) == xL);
+    REQUIRE(Diagonal::YCoordinate(xL + yL, xL - yL) == yL);
     REQUIRE(d == d);
     REQUIRE(!(d == d2));
     REQUIRE_THROWS_AS(Diagonal d(10, 5, 5), ParcoursException);
@@ -89,7 +89,7 @@ TEST_CASE("LogAdd Tests", "[NumericTests]") {
         double i = RandomDouble();
         double j = RandomDouble();
         double k = i + j;
-        double l = exp(logAdd(log(i), log(j)));
+        double l = exp(LogAdd(log(i), log(j)));
         REQUIRE(l < k + 0.001);
         REQUIRE(l > k - 0.001);
     }
@@ -119,7 +119,7 @@ TEST_CASE("Test Cell", "[DpTests]") {
     auto dot_prd = [&sM5] (double *cell, std::function<double(HiddenState s, bool re)> fc) -> double {
         double total_prob = cell[0] + fc(match, false);
         for (int64_t s = 1; s < sM5.StateNumber(); s++) {
-            total_prob = logAdd(total_prob, cell[s] + fc(static_cast<HiddenState>(s), false));
+            total_prob = LogAdd(total_prob, cell[s] + fc(static_cast<HiddenState>(s), false));
         }
         return total_prob;
     };
@@ -194,8 +194,8 @@ TEST_CASE("Test DpDiagonal", "[DpTests]") {
             double c2 = d.CellGetVal(1, static_cast<HiddenState>(s));
             REQUIRE(c1 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
             REQUIRE(c2 == sM5.EndStateProb(static_cast<HiddenState>(s), false));
-            total_prob = logAdd(total_prob, 2 * c1);
-            total_prob = logAdd(total_prob, 2 * c2);
+            total_prob = LogAdd(total_prob, 2 * c1);
+            total_prob = LogAdd(total_prob, 2 * c2);
         }
         DpDiagonal<double, 5> d2 = d;
         double tp = d.Dot(d2);

@@ -9,12 +9,12 @@ HmmGraph::HmmGraph(): nVertices(0), nArcs(0), next_vertex_id(0), nPaths(-1), mos
 HmmGraph::~HmmGraph() {  }
 
 HmmGraph::HmmGraph(HmmGraph& other) {
-    if (&other != this) copy_graph(*this, other);
+    if (&other != this) copyGraph(*this, other);
 }
 
 HmmGraph& HmmGraph::operator = (HmmGraph& other) {
     if (&other != this) {
-        copy_graph(*this, other);
+        copyGraph(*this, other);
     }
     return *this;
 }
@@ -234,17 +234,17 @@ std::set<int64_t> HmmGraph::Sinks() {
 }
 
 std::unordered_map<int64_t, std::deque<int64_t>> HmmGraph::PathMap() { 
-    if (!initialized_paths) initialize_paths(true);
+    if (!initialized_paths) initializePaths(true);
     return paths; 
 }
 
 std::unordered_map<int64_t, SymbolString> HmmGraph::PathSequences() {
-    if (!initialized_paths) initialize_paths(true);
+    if (!initialized_paths) initializePaths(true);
     return path_sequences;
 }
 
 std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
-    if (!initialized_paths) initialize_paths(true);
+    if (!initialized_paths) initializePaths(true);
     
     std::vector<std::deque<int64_t>> vertex_paths;
 
@@ -256,17 +256,17 @@ std::vector<std::deque<int64_t>> HmmGraph::AllPaths() {
 }
 
 int64_t HmmGraph::NumberOfPaths() {
-    if (!initialized_paths) initialize_paths();
+    if (!initialized_paths) initializePaths();
     return nPaths;
 }
 
 std::unordered_map<int64_t, double> HmmGraph::PathScores(bool normalize) { 
-    if (!normalized_path_scores && normalize) normalize_path_scores();
+    if (!normalized_path_scores && normalize) normalizePathScores();
     return path_scores; 
 }
 
 int64_t HmmGraph::MaxScorePath() { 
-    if (!normalized_path_scores) normalize_path_scores();
+    if (!normalized_path_scores) normalizePathScores();
     return most_probable_path; 
 }
 
@@ -275,7 +275,7 @@ std::unordered_map<int64_t, GraphAlignedPairs> HmmGraph::PathAlignedPairs() { re
 template<class Hmm, size_t sn>
 void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters& p,  Hmm& hmm, 
                      bool get_aligned_pairs, bool ragged_end) {
-    if (!initialized_paths) initialize_paths(true);
+    if (!initialized_paths) initializePaths(true);
     
     if ((path_sequences.size() == 0) || (S.size() == 0)) return;
 
@@ -285,7 +285,7 @@ void HmmGraph::Align(SymbolString& S, AnchorPairs& anchors, AlignmentParameters&
         if (get_aligned_pairs) {
             AlignedPairs aln_pairs = aln.AlignedPairsGetter();
             // translate the aligned pairs to reflect the graph coordinates
-            GraphAlignedPairs g_pairs = translate_pairwise_aligned_pairs(aln_pairs, kv.first);
+            GraphAlignedPairs g_pairs = translatePairwiseAlignedPairs(aln_pairs, kv.first);
             assert(g_pairs.size() == aln_pairs.size());
             // add these aligned pairs to the rest for this path
             path_aligned_pairs[kv.first].insert(end(path_aligned_pairs[kv.first]), begin(g_pairs), end(g_pairs));
@@ -360,7 +360,7 @@ void HmmGraph::AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& 
 * Internal Methods
 */
 
-void HmmGraph::initialize_paths(bool double_check) {
+void HmmGraph::initializePaths(bool double_check) {
     auto check = [this] () -> bool {
         assert(initialized_paths);
         if (nPaths < 0) return false;                                        // not initialized
@@ -377,13 +377,13 @@ void HmmGraph::initialize_paths(bool double_check) {
 
     if (initialized_paths) {
         bool ok = check();
-        if (!ok) throw ParcoursException("[HmmGraph::initialize_paths] check not OK\n");
+        if (!ok) throw ParcoursException("[HmmGraph::initializePaths] check not OK\n");
         else return;
     }
     
     try {
-        find_paths(true);
-        extract_sequences();
+        findPaths(true);
+        extractSequences();
         initialized_paths = true;
     } catch (ParcoursException& e) {
         std::cerr << e.what() << "\n";
@@ -392,14 +392,14 @@ void HmmGraph::initialize_paths(bool double_check) {
     if (double_check) { 
         try {
             assert(initialized_paths);
-            initialize_paths(false);
+            initializePaths(false);
         } catch (ParcoursException& e) {
             std::cerr << e.what() << "\n";
         }
     }
 }
 
-void HmmGraph::extract_sequences() {
+void HmmGraph::extractSequences() {
     if (paths.empty()) return;
     for (auto& kv : paths) {  // (pathID, vertex_path)
         SymbolString S = [&] () {
@@ -418,19 +418,19 @@ void HmmGraph::extract_sequences() {
         }();
         path_sequences[kv.first] = S;
         if (S.size() != sequence_to_vertex[kv.first].size()) throw ParcoursException(""
-                "[HmmGraph::extract_sequences] sequence %" PRIi64 " length not equal to vertex_to_sequence "
+                "[HmmGraph::extractSequences] sequence %" PRIi64 " length not equal to vertex_to_sequence "
                 "pairs length, expected %lu == %lu\n", kv.first, S.size(), sequence_to_vertex[kv.first].size());
     }
     
-    if (path_sequences.size() != paths.size()) throw ParcoursException("[HmmGraph::extract_sequences]"
+    if (path_sequences.size() != paths.size()) throw ParcoursException("[HmmGraph::extractSequences]"
             " error collecting path sequences");
 
     return;
 }
 
-void HmmGraph::find_paths(bool test_sort) {
+void HmmGraph::findPaths(bool test_sort) {
     if (!paths.empty()) {
-        st_uglyf("[HmmGraph::find_paths] clearing non-empty paths");
+        st_uglyf("[HmmGraph::findPaths] clearing non-empty paths");
         paths.clear();
         nPaths = -1;
     }
@@ -500,7 +500,7 @@ void HmmGraph::find_paths(bool test_sort) {
     //assert(nPaths == paths.size());
 }
 
-void HmmGraph::normalize_path_scores() {
+void HmmGraph::normalizePathScores() {
     if (path_scores.empty()) throw ParcoursException("[HmmGraph::normalized_path_scores] path scores is empty");
     if (normalized_path_scores) std::cerr << "[HmmGraph::normalized_path_scores] WARNING normalizing scores"
                                              " that have already been normalized?" << std::endl;
@@ -527,7 +527,7 @@ void HmmGraph::normalize_path_scores() {
     normalized_path_scores = true;
 }
 
-GraphAlignedPairs HmmGraph::translate_pairwise_aligned_pairs(AlignedPairs& pairs, int64_t pathId) {
+GraphAlignedPairs HmmGraph::translatePairwiseAlignedPairs(AlignedPairs& pairs, int64_t pathId) {
     // loop over the aligned pairs and replace the y-corrdinate with the vertex offset pair 
     GraphAlignedPairs g_pairs;
     g_pairs.reserve(pairs.size());
@@ -545,9 +545,9 @@ GraphAlignedPairs HmmGraph::translate_pairwise_aligned_pairs(AlignedPairs& pairs
 }
 
 
-void HmmGraph::clear_graph() {
+void HmmGraph::clearGraph() {
     if (vertex_list.size() > 0 || nVertices > 0 || nArcs > 0) {
-        std::cerr << "[HmmGraph::clear_graph] WARNING: clearning an initialized graph\n";
+        std::cerr << "[HmmGraph::clearGraph] WARNING: clearning an initialized graph\n";
     }
     vertex_list.clear();
     adjacentcy_list.clear();
@@ -561,8 +561,8 @@ void HmmGraph::clear_graph() {
     initialized_paths = false;
 }
 
-void HmmGraph::copy_graph(HmmGraph& newer, HmmGraph& other) {
-    newer.clear_graph();
+void HmmGraph::copyGraph(HmmGraph& newer, HmmGraph& other) {
+    newer.clearGraph();
     // determine the range of the other graph
     int64_t min_vertex_id = *(std::min_element(begin(other.Vertices()), end(other.Vertices())));
     int64_t max_vertex_id = *(std::max_element(begin(other.Vertices()), end(other.Vertices())));

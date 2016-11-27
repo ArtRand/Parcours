@@ -15,7 +15,7 @@ static inline double lookup(double x) {
     return ((-0.000458661602210f * x + 0.009695946122598f) * x + 0.930734667215156f) * x + 0.168037164329057f;
 }
 
-double logAdd(double x, double y) {
+double LogAdd(double x, double y) {
     if (x < y)
         return (x == LOG_ZERO || y - x >= logUnderflowThreshold) ? y : lookup(y - x) + x;
     return (y == LOG_ZERO || x - y >= logUnderflowThreshold) ? x : lookup(x - y) + y;

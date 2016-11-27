@@ -40,10 +40,10 @@ Band<T, sn>::Band(AnchorPairs anchors, int64_t lX, int64_t lY, int64_t expansion
         xmyL = avoid_off_by_one(xmyL);
         xmyR = avoid_off_by_one(xmyR);
 
-        xmyL = set_boundary(xmyL, diagonal_XCoordinate(XaY, xmyL), xL, 1);
-        xmyL = set_boundary(xmyL, yL, diagonal_YCoordinate(XaY, xmyL), 1);
-        xmyR = set_boundary(xmyR, xU, diagonal_XCoordinate(XaY, xmyR), -1);
-        xmyR = set_boundary(xmyR, diagonal_YCoordinate(XaY, xmyR), yU, -1);
+        xmyL = set_boundary(xmyL, Diagonal::XCoordinate(XaY, xmyL), xL, 1);
+        xmyL = set_boundary(xmyL, yL, Diagonal::YCoordinate(XaY, xmyL), 1);
+        xmyR = set_boundary(xmyR, xU, Diagonal::XCoordinate(XaY, xmyR), -1);
+        xmyR = set_boundary(xmyR, Diagonal::YCoordinate(XaY, xmyR), yU, -1);
         
         Diagonal d(XaY, xmyL, xmyR);
         diagonals.insert(begin(diagonals) + XaY, d);
@@ -67,8 +67,8 @@ Band<T, sn>::Band(AnchorPairs anchors, int64_t lX, int64_t lY, int64_t expansion
                 x = anchor.first + 1;
                 y = anchor.second + 1;
                 // Check the anchor pairs
-                assert(x > diagonal_XCoordinate(pxay, pxmy));
-                assert(y > diagonal_YCoordinate(pxay, pxmy));
+                assert(x > Diagonal::XCoordinate(pxay, pxmy));
+                assert(y > Diagonal::YCoordinate(pxay, pxmy));
                 assert(x <= lX);
                 assert(y <= lY);
                 assert(x > 0);
@@ -78,10 +78,10 @@ Band<T, sn>::Band(AnchorPairs anchors, int64_t lX, int64_t lY, int64_t expansion
             nxay = x + y;
             nxmy = x - y;
 
-            xL = bound_coordinate(diagonal_XCoordinate(pxay, pxmy - expansion), lX);
-            yL = bound_coordinate(diagonal_YCoordinate(nxay, nxmy - expansion), lY);
-            xU = bound_coordinate(diagonal_XCoordinate(nxay, nxmy + expansion), lX);
-            yU = bound_coordinate(diagonal_YCoordinate(pxay, pxmy + expansion), lY);
+            xL = bound_coordinate(Diagonal::XCoordinate(pxay, pxmy - expansion), lX);
+            yL = bound_coordinate(Diagonal::YCoordinate(nxay, nxmy - expansion), lY);
+            xU = bound_coordinate(Diagonal::XCoordinate(nxay, nxmy + expansion), lX);
+            yU = bound_coordinate(Diagonal::YCoordinate(pxay, pxmy + expansion), lY);
         }
     }
 }

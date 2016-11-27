@@ -38,7 +38,7 @@ T DpDiagonal<T, sn>::CellGetVal(int64_t xmy, HiddenState s) {
     if ((diagonal.Xay() + xmy) % 2 != 0) throw ParcoursException(
             "[DpDiagonal::CellGetVal] Illegal request %" PRIi64 "\n", xmy);
     
-    return cells.at(state_index(xmy, s));
+    return cells.at(stateIndex(xmy, s));
 }
 
 template<class T, size_t sn>
@@ -47,13 +47,13 @@ T *DpDiagonal<T, sn>::CellGetter(int64_t xmy) {
     if ((diagonal.Xay() + xmy) % 2 != 0) throw ParcoursException(
             "[DpDiagonal::CellGetVal] Illegal request %" PRIi64 "\n", xmy);
     // return 'match' index so that we're at the start of the cell
-    return &cells.at(state_index(xmy, match));
+    return &cells.at(stateIndex(xmy, match));
 }
 
 template<class T, size_t sn>
 void DpDiagonal<T, sn>::CellSetter(int64_t xmy, HiddenState s, T value) {
     if (!active) throw ParcoursException("[DpDiagonal::CellSetter] DpDiagonal not active\n");
-    cells.at(state_index(xmy, s)) = value;
+    cells.at(stateIndex(xmy, s)) = value;
 }
 
 template<class T, size_t sn>
@@ -84,10 +84,10 @@ T DpDiagonal<T, sn>::Dot(DpDiagonal& d2) {
     while (xmy <= diagonal.MaxXmy()) {
         double p = CellGetVal(xmy, match) + d2.CellGetVal(xmy, match);
         for (int64_t s = 1; s < _state_number; s++) {
-            p = logAdd(p, (CellGetVal(xmy, static_cast<HiddenState>(s)) 
+            p = LogAdd(p, (CellGetVal(xmy, static_cast<HiddenState>(s)) 
                            + d2.CellGetVal(xmy, static_cast<HiddenState>(s))));
         }
-        total_prob = logAdd(total_prob, p);
+        total_prob = LogAdd(total_prob, p);
         xmy += 2;
     }
     return total_prob;
@@ -122,7 +122,7 @@ void DpDiagonal<T, sn>::Activate(int64_t xay, int64_t xmyL, int64_t xmyR) {
 }
 
 template<class T, size_t sn>
-int64_t DpDiagonal<T, sn>::state_index(int64_t xmy, HiddenState s) {
+int64_t DpDiagonal<T, sn>::stateIndex(int64_t xmy, HiddenState s) {
     if (s >= _state_number) throw ParcoursException("[DpDiagonal::state_index] illegal Hidden state %i", s);
     return (((xmy - diagonal.MinXmy()) / 2) * _state_number) + s;
 }

@@ -41,7 +41,7 @@ public:
     void Activate(int64_t xay, int64_t xmyL, int64_t xmyR);
 
 private:
-    int64_t state_index(int64_t xmy, HiddenState s);
+    int64_t stateIndex(int64_t xmy, HiddenState s);
     Diagonal diagonal;
     std::vector<T> cells;
     int64_t _state_number = sn;
