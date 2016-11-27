@@ -231,7 +231,7 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
 #else
         int64_t test_cases = 5;
 #endif
-        #pragma omp parallel for reduction(+:incorrect) 
+        #pragma omp parallel for num_threads(4) reduction(+:incorrect) 
         for (int64_t test = 0; test < test_cases; test++) {
             // setup the graph and get the path sequences
             std::string a = RandomNucleotides(RandomInt(10, 20));
