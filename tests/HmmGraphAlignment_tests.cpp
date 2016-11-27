@@ -127,6 +127,48 @@ TEST_CASE("Multipath Alignment test", "[alignment]") {
         REQUIRE(aln_pairs_no_probs.size() == 4);
 
     }
+    SECTION("Paths have empty AlignedPairs where there aren't any") {
+        std::string s1 ("AAAATTTT");
+        std::string s2 ("GG");
+        std::string s3 ("AAAATTTT");
+
+        HmmGraph G = HmmGraph();
+
+        int64_t vid0 = G.AddVertex(&s1);
+        int64_t vid1 = G.AddVertex(&s2);
+        int64_t vid2 = G.AddVertex(&s3);
+
+        G.AddArc(vid0, vid1);
+        G.AddArc(vid1, vid2);
+        G.AddArc(vid0, vid2);
+
+        std::string read ("CCCCCCCCCCCCCCCC");
+
+        AnchorPairs anchors = EmptyAnchors();
+
+        AlignmentParameters p;
+        p.expansion = 4;
+        p.threshold = 0.9;
+        p.ignore_gaps = false;
+
+        FiveStateSymbolHmm hmm(SetNucleotideEmissionsToDefauts());
+
+        G.Align<FiveStateSymbolHmm, fiveState>(read, anchors, p, hmm);
+        
+        auto pairs = G.PathAlignedPairs();
+        
+        REQUIRE(pairs.size() == G.NumberOfPaths());
+
+        for (auto kv : pairs) {
+            REQUIRE(kv.second.size() == 0);
+            // for checking pairs, delete when annoying to look at
+            //st_uglyf("Path %lld aligned pairs\n", kv.first);
+            //for (auto p : kv.second) {
+            //    st_uglyf("x: %lld vertex: %lld offset: %lld p: %f\n", 
+            //            std::get<1>(p), std::get<2>(p).first, std::get<2>(p).second, std::get<0>(p));
+            //}
+        }
+    }
     SECTION("Sequences align to graph paths correctly when read matches exactly") {
         // setup the graph and get the path sequences
         std::string a = RandomNucleotides(RandomInt(5, 10));

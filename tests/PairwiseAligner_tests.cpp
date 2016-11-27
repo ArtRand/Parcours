@@ -356,6 +356,20 @@ TEST_CASE("Test PairwiseAlignment", "[alignment]") {
         REQUIRE(correct_pairs == pairs_no_probs);    
     }
 
+    SECTION("PairwiseAlignment procuces empty AlignedPairs when sequences don't have any") {
+        SymbolString sX = {{c, c, c, c}};
+        SymbolString sY = {{t, t, t, t, t, t}}; 
+        FiveStateSymbolHmm hmm;
+        hmm.InitializeEmissions(SetNucleotideEmissionsToDefauts());
+        AnchorPairs anchors = EmptyAnchors();
+        AlignmentParameters p;
+        p.expansion = 2;
+        p.threshold = 0.8;
+        PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, sX, sY, anchors, p);
+        AlignedPairs aligned_pairs = aln.AlignedPairsGetter();
+        REQUIRE(aligned_pairs.size() == 0);
+    }
+
     SECTION("PairwiseAlignment works on random related sequences", "[alignment]") {
         // generate some random (similar) sequences
         for (int64_t t = 0; t < 100; t++) {
