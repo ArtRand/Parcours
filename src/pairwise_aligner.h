@@ -18,7 +18,7 @@ template<class Hmm, size_t sn>
 class PairwiseAlignment {
 public:
     PairwiseAlignment<Hmm, sn>(Hmm& hmm, SymbolString&, SymbolString&, AnchorPairs&, AlignmentParameters, 
-                               bool ragged_end=false);
+                               bool local_aln=false);
     
     void Align();
 
@@ -42,6 +42,7 @@ private:
     SymbolString& sY;
 
     AlignmentParameters params;
+    bool ragged_end;  // local alignment
     AlignedPairs aligned_pairs;
     double total_probability = LOG_ZERO;
     DpMatrix<double, sn> forward_matrix;
@@ -52,7 +53,7 @@ private:
     void forwardAlgorithm(Hmm&, SymbolString&, SymbolString&);
     void backwardAlgorithm(Hmm&, SymbolString&, SymbolString&);
     void posteriorMatchProbs();
-    void calculateTotalProbability(Hmm&);
+    void calculateTotalProbability();
     bool aligned = false;
     
 };

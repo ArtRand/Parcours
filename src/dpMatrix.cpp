@@ -73,7 +73,8 @@ void DpMatrix<T, sn>::DeleteDpDiagonal(int64_t xay) {
 template<class T, size_t sn>
 T DpMatrix<T, sn>::TotalProbability(std::function<double(HiddenState s, bool re)> StateValueGetter, 
                                     bool forward) {
-    auto dot_prod = [this] (double *cell, std::function<double(HiddenState s, bool re)> fc) -> double {
+    auto dot_prod = [this] (double *cell, 
+                                        std::function<double(HiddenState s, bool re)> fc) -> double {
         double total_prob = cell[0] + fc(match, false);
         for (int64_t s = 1; s < _state_number; s++) {
             total_prob = LogAdd(total_prob, cell[s] + fc(static_cast<HiddenState>(s), false));

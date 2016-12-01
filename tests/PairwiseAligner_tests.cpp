@@ -240,7 +240,7 @@ TEST_CASE("Test DpMatrix", "[DpTests]") {
     }
 }
 
-TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
+TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment][current]") {
     SymbolString sX = {{a, g, c, g}};
     SymbolString sY = {{a, g, t, t, c, g}};
     
@@ -286,6 +286,22 @@ TEST_CASE("Test DpDiagonalCalculations", "[DpTests][alignment]") {
     double total_backward_prob = backward_mat.TotalProbability(sM5.StartStateProbFcn(), false);
     //st_uglyf("total forward p :%f total backward p: %f\n", total_forward_prob, total_backward_prob);
     REQUIRE(std::abs(total_forward_prob - total_backward_prob) < 0.001);
+    
+    // Do the total probability calculations manually, then check the TotalProbability method
+    // in StateMachine5
+    DpDiagonal<double, fiveState> *dpFw  = forward_mat.DpDiagonalGetter(forward_mat.DiagonalNumber());
+    DpDiagonal<double, fiveState> *dpBw  = backward_mat.DpDiagonalGetter(backward_mat.DiagonalNumber());
+    DpDiagonal<double, fiveState> *dpFw0 = forward_mat.DpDiagonalGetter(0);
+    DpDiagonal<double, fiveState> *dpBw0 = backward_mat.DpDiagonalGetter(0);
+    
+    double test_total_prob_at_diagonal_number = dpFw->Dot(*dpBw);
+    double test_total_prob_at_zero            = dpFw0->Dot(*dpBw0);
+    REQUIRE(std::abs(test_total_prob_at_diagonal_number - test_total_prob_at_zero) < 0.01);;
+
+    double total_prob_at_diagonal_number = sM5.TotalProbability(forward_mat, backward_mat, false);
+    double total_prob_at_zero            = sM5.TotalProbability(forward_mat, backward_mat, true);
+    REQUIRE(std::abs(total_prob_at_diagonal_number - total_prob_at_zero) < 0.01);;
+    REQUIRE(std::abs(total_prob_at_diagonal_number - test_total_prob_at_diagonal_number) < 0.01);;
 
     AlignedPairs aligned_pairs;
     REQUIRE(aligned_pairs.size() == 0);
@@ -356,7 +372,7 @@ TEST_CASE("Test PairwiseAlignment", "[alignment]") {
         REQUIRE(correct_pairs == pairs_no_probs);    
     }
 
-    SECTION("PairwiseAlignment procuces empty AlignedPairs when sequences don't have any") {
+    SECTION("PairwiseAlignment produces empty AlignedPairs when sequences don't have any") {
         SymbolString sX = {{c, c, c, c}};
         SymbolString sY = {{t, t, t, t, t, t}}; 
         FiveStateSymbolHmm hmm;
@@ -422,6 +438,44 @@ TEST_CASE("Test PairwiseAlignment", "[alignment]") {
     }
 }
 
+TEST_CASE("PairwiseAlignment works with ragged ends (local alignment)", "[current]") {
+    SECTION("Local PairwiseAlignment works for simple sequences") {
+        SymbolString sX =       {{a, g, c, g}};
+        SymbolString sY = {{t, t, a, g, c, g, t, t}}; 
+        
+        FiveStateSymbolHmm hmm;
+        hmm.InitializeEmissions(SetNucleotideEmissionsToDefauts());
+        
+        AnchorPairs anchors;
+        anchors.emplace_back(0, 2);
+        anchors.emplace_back(1, 3);
+        anchors.emplace_back(3, 5); 
+        
+        AlignmentParameters p;
+        p.expansion = 2;
+        p.threshold = 0.2;
+        PairwiseAlignment<FiveStateSymbolHmm, fiveState> aln(hmm, sX, sY, anchors, p, true);
+        AlignedPairs aligned_pairs = aln.AlignedPairsGetter();
+        REQUIRE(aligned_pairs.size() == 4);
+        CheckAlignedPairs(aligned_pairs, sX.size(), sY.size());   
+        // extracts just the aligned pair coordinates, leaves the posteriors
+        auto pairs_no_probs = [&aligned_pairs] () -> AnchorPairs {
+            AnchorPairs pairs;
+            for (auto p : aligned_pairs) {
+                pairs.emplace_back(std::get<1>(p), std::get<2>(p));
+            }
+            return pairs;
+        }();
+        // make sure that worked
+        REQUIRE(pairs_no_probs.size() == 4);
 
+        AnchorPairs correct_pairs;
+        correct_pairs.emplace_back(0, 2);
+        correct_pairs.emplace_back(1, 3);
+        correct_pairs.emplace_back(2, 4);
+        correct_pairs.emplace_back(3, 5);
+        REQUIRE(correct_pairs == pairs_no_probs);    
+    }
+}
 
 

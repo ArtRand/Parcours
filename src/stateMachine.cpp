@@ -104,7 +104,9 @@ double StateMachine5<set_size>::EndStateProb(HiddenState state, bool ragged_end)
             return LOG_ZERO;
         }
     };
-
+    // 
+    // TODO make ternary, this is ugly
+    //
     if (ragged_end) { 
         return ragged_end_prob();
     } else {
@@ -233,6 +235,25 @@ void StateMachine5<set_size>::DpDiagonalCalculation(int64_t xay, DpMatrix<double
                           do_transition);
 }
 
+template<size_t set_size>
+double StateMachine5<set_size>::TotalProbability(DpMatrix<double, fiveState>& fw_mat, 
+                                                 DpMatrix<double, fiveState>& bw_mat,
+                                                 bool zero) {
+    int64_t XaY = zero ? 0 : fw_mat.DiagonalNumber();
+    if (!zero) {
+        //
+        // TODO shold have a test for this 
+        //
+        if (fw_mat.DiagonalNumber() != bw_mat.DiagonalNumber()) {
+            throw ParcoursException("[StateMachine5::TotalProbability] Dp Matrices do not "
+                                    "have the same diagonal number %" PRIi64 " != %" PRIi64"",
+                                    fw_mat.DiagonalNumber(), bw_mat.DiagonalNumber());
+        }
+    }
+    DpDiagonal<double, fiveState> *forward_dpdiagonal  = fw_mat.DpDiagonalGetter(XaY);
+    DpDiagonal<double, fiveState> *backward_dpdiagonal = bw_mat.DpDiagonalGetter(XaY);
+    return forward_dpdiagonal->Dot(*backward_dpdiagonal);
+}
 
 void DoTransitionForward::operator () (double *from_cells, double *to_cells, 
                                        HiddenState from, HiddenState to, 

@@ -30,7 +30,8 @@ public:
     
     int64_t DiagonalNumber();
 
-    T TotalProbability(std::function<double(HiddenState s, bool re)> StateValueGetter, bool forward);
+    T TotalProbability(std::function<double(HiddenState s, bool re)> StateValueGetter, 
+                       bool forward);
 private:
     int64_t diagonal_number;
     int64_t active_diagonals;

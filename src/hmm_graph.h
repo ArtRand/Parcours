@@ -103,8 +103,8 @@ public:
                bool get_pairs=true, bool ragged_end=false);
 
     // Call the above template methods with implemented models for convenience
-    void AlignWithFiveStateSymbolHmm(std::string& S, AnchorPairs& anchors, 
-                                     AlignmentParameters& p, bool get_pairs=true, bool ragged_end=false);
+    void AlignWithFiveStateSymbolHmm(std::string& S, AnchorPairs& anchors, AlignmentParameters& p, 
+                                     bool get_pairs=true, bool ragged_end=false);
 
     void AlignWithFiveStateSymbolHmm(std::string& S, AlignmentParameters& p, 
                                      bool get_pairs=true, bool ragged_end=false);

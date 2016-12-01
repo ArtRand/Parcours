@@ -2,8 +2,8 @@
 
 template<class Hmm, size_t sn>
 PairwiseAlignment<Hmm, sn>::PairwiseAlignment(Hmm& hmm,SymbolString& sx, SymbolString& sy,
-                                              AnchorPairs& anchors, AlignmentParameters p, bool ragged_end): 
-                                                  model(hmm), sX(sx), sY(sy), params(p),
+                                              AnchorPairs& anchors, AlignmentParameters p, bool local_aln): 
+                                                  model(hmm), sX(sx), sY(sy), params(p), ragged_end(local_aln),
                                                   forward_matrix(sx.size(), sy.size(), anchors, p.expansion), 
                                                   backward_matrix(sx.size(), sy.size(), anchors, p.expansion) {
     // check input and initialization of Dp matrices                                                     
@@ -21,14 +21,15 @@ PairwiseAlignment<Hmm, sn>::PairwiseAlignment(Hmm& hmm,SymbolString& sx, SymbolS
     }
     // initialize 
     forward_matrix.DpDiagonalGetter(0)->InitValues(model.StartStateProbFcn(), ragged_end);
-    backward_matrix.DpDiagonalGetter(backward_matrix.DiagonalNumber())->InitValues(model.EndStateProbFcn(), ragged_end);
+    backward_matrix.DpDiagonalGetter(backward_matrix.DiagonalNumber())->InitValues(model.EndStateProbFcn(), 
+                                                                                   ragged_end);
 }
 
 template<class Hmm, size_t sn>
 void PairwiseAlignment<Hmm, sn>::Align() {
     forwardAlgorithm(model, sX, sY);
     backwardAlgorithm(model, sX, sY);
-    calculateTotalProbability(model);
+    calculateTotalProbability();
     posteriorMatchProbs();
     aligned = true;
 }   
@@ -67,10 +68,10 @@ double PairwiseAlignment<Hmm, sn>::Score(bool ignore_gaps) {
 
 template<class Hmm, size_t sn>
 void PairwiseAlignment<Hmm, sn>::PosteriorMatchProbabilities(int64_t xay, double total_probability, 
-                                                           double threshold, HiddenState match_state,
-                                                           DpMatrix<double, sn>& forward_mat, 
-                                                           DpMatrix<double, sn>& backward_mat, 
-                                                           AlignedPairs& aligned_pairs) {
+                                                             double threshold, HiddenState match_state,
+                                                             DpMatrix<double, sn>& forward_mat, 
+                                                             DpMatrix<double, sn>& backward_mat, 
+                                                             AlignedPairs& aligned_pairs) {
     DpDiagonal<double, sn> *forward_diagonal= forward_mat.DpDiagonalGetter(xay);
     DpDiagonal<double, sn> *backward_diagonal= backward_mat.DpDiagonalGetter(xay);
     int64_t xmy = forward_diagonal->DiagonalGetter().MinXmy();
@@ -110,11 +111,11 @@ void PairwiseAlignment<Hmm, sn>::backwardAlgorithm(Hmm& hmm, SymbolString& sX, S
 }
 
 template<class Hmm, size_t sn>
-void PairwiseAlignment<Hmm, sn>::calculateTotalProbability(Hmm& hmm) {
-    double total_fw_prob = forward_matrix.TotalProbability(hmm.EndStateProbFcn(), true);
-    double total_bw_prob = backward_matrix.TotalProbability(hmm.StartStateProbFcn(), false);
+void PairwiseAlignment<Hmm, sn>::calculateTotalProbability() {
+    double total_fw_prob = model.TotalProbability(forward_matrix, backward_matrix, false);
+    double total_bw_prob = model.TotalProbability(forward_matrix, backward_matrix, true);
     if (std::abs(total_fw_prob - total_bw_prob) > 0.01) throw ParcoursException(
-            "[PairwiseAlignment::calculateTotalProbability] FW and BW total probs too different"
+            "[PairwiseAlignment::calculateTotalProbability] FW and BW total probs too different "
             "FW prob: %f BW prob: %f\n", total_fw_prob, total_bw_prob);
     total_probability = total_fw_prob;
 }

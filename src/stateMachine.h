@@ -52,6 +52,10 @@ protected:
     // type of alignment
     virtual void InitializeEmissions(EmissionsInitFunction<set_size>) = 0;
 
+    // 
+    // TODO update virtual dynamic programming functions
+    //
+
     std::array<double, set_size * set_size > match_probs;
 
     std::array<double, set_size> x_gap_probs;
@@ -115,7 +119,10 @@ public:
     void DpDiagonalCalculation(int64_t xay, DpMatrix<double, fiveState>& mat, 
                                const SymbolString& sX, const SymbolString& sY, 
                                TransitionFunction do_transition);
-
+    
+    double TotalProbability(DpMatrix<double, fiveState>& fw_mat, DpMatrix<double, fiveState>& bw_mat,
+                            bool zero=false);
+    
     StateMachineType type;
     
 private:
