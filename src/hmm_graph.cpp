@@ -189,13 +189,10 @@ void HmmGraph::TopologicalSort(bool test) {
 
 bool HmmGraph::TestSort() {
     // decide that an empty graph cannot be sorted
-    if (K() == 0) {
-        return false;
-    }
-    // if there aren't any arcs, cannot be sorted
-    if (adjacentcy_list.size() == 0) {
-        return false;
-    }
+    if (K() == 0) return false; // an empty graph is not sorted
+    // if there aren't any arcs, but there is more than one vertex, it
+    // cannot be sorted
+    if (adjacentcy_list.size() == 0 && K() > 1) return false;
 
     // container to keep track of vertices we've visited
     std::set<int64_t> seen;

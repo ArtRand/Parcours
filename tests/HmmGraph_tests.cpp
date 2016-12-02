@@ -106,6 +106,14 @@ TEST_CASE("Basic Object Tests", "[HmmGraph]") {
         G.AddArc(n1, n3);
         REQUIRE_THROWS_AS(G.TopologicalSort(true), ParcoursException);
     }
+
+    SECTION("HmmGraph 'sorts' a singleton graph") {
+        std::string s = RandomNucleotides(RandomInt(5, 10));
+        HmmGraph G = HmmGraph();
+        int64_t v0 = G.AddVertex(&s);
+        REQUIRE_NOTHROW(G.TopologicalSort(true));
+        REQUIRE(G.TestSort());
+    }
     
     SECTION("HmmGraph finds sources and sinks correctly") {
         std::string t = RandomNucleotides(RandomInt(5, 10));
